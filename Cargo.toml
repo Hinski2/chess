@@ -1,0 +1,12 @@
+[package]
+name = "chess"
+version = "0.1.0"
+edition = "2024"
+
+[workspace]
+members = [
+    "engine",
+]
+
+[dependencies]
+engine = { path = "engine" }
