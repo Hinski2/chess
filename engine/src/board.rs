@@ -82,11 +82,16 @@ impl Board {
         return match (piece_type, self.side_to_move) {
             (Piece::Pawn, Color::White) => self.generate_pawn_moves_white(positions),
             (Piece::Pawn, Color::Black) => self.generate_pawn_moves_black(positions),
-            Piece::Knight => self.generate_knight_moves(positions),
+
+            (Piece::Knight, Color::White) => self.generate_knight_moves_white(positions),
+            (Piece::Knight, Color::Black) => self.generate_knight_moves_black(positions),
+
             Piece::Bishop => self.generate_bishop_moves(positions),
             Piece::Rook => self.generate_rook_moves(positions),
             Piece::Queen => self.generate_queen_moves(positions),
-            Piece::King => self.generate_king_moves(positions),
+
+            (Piece::King, Color::White) => self.generate_king_moves_white(positions),
+            (Piece::King, Color::Black) => self.generate_king_moves_black(positions),
         }
     }
 }
