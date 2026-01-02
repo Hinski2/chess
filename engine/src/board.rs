@@ -86,9 +86,14 @@ impl Board {
             (Piece::Knight, Color::White) => self.generate_knight_moves_white(positions),
             (Piece::Knight, Color::Black) => self.generate_knight_moves_black(positions),
 
-            Piece::Bishop => self.generate_bishop_moves(positions),
-            Piece::Rook => self.generate_rook_moves(positions),
-            Piece::Queen => self.generate_queen_moves(positions),
+            (Piece::Bishop, Color::White) => self.generate_bishop_moves_white(positions),
+            (Piece::Bishop, Color::Black) => self.generate_bishop_moves_black(positions),
+
+            (Piece::Rook, Color::White) => self.generate_rook_moves_white(positions),
+            (Piece::Rook, Color::Black) => self.generate_rook_moves_black(positions),
+
+            (Piece::Queen, Color::White) => self.generate_queen_moves_white(positions),
+            (Piece::Queen, Color::Black) => self.generate_queen_moves_black(positions),
 
             (Piece::King, Color::White) => self.generate_king_moves_white(positions),
             (Piece::King, Color::Black) => self.generate_king_moves_black(positions),
