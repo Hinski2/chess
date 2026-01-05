@@ -1,12 +1,18 @@
 pub mod piece_move;
 pub mod board;
-pub mod generateMoves;
-
+pub mod generate_moves;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum Color {
     White,
     Black,
+}
+
+impl Color {
+    #[inline(always)]
+    pub fn get_opposite(&self) -> Color {
+        if *self == Color::White { Color::Black } else { Color::White }
+    }
 }
 
 #[derive(Clone, Copy)]
