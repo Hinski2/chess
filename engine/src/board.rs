@@ -1,5 +1,7 @@
+use crate::BoardState;
 use crate::generate_moves::king::KING_ATTACK;
 use crate::generate_moves::knight::KNIGHT_ATTACK;
+use crate::piece_move::MoveFlag;
 use super::piece_move::PieceMove;
 use super::{Color, Piece, PieceColor};
 
@@ -10,12 +12,10 @@ pub struct Board {
     pub(crate) occupied:  [u64; 2],
     pub(crate) pieces:   [PieceColor; 64],
 
-    pub(crate) en_passant: Option<u8>,     // idx where we can attack with en passant
-    pub(crate) castle_rights: u8,          // 0: white left, 1: white right, 2: back left, 3: back right
+    pub(crate) board_state: BoardState,
 }
 
 impl Board {
-// public
     pub fn new() -> Board {
 
         const WHITE: usize = Color::White as usize;
@@ -57,27 +57,62 @@ impl Board {
             side_to_move: Color::White,
             bitboard: bitboard,
             occupied: [0x0000_0000_0000_ffff, 0xffff_0000_0000_0000],
-            en_passant: Option::None,
             pieces: pieces,
-            castle_rights: 0x0F,
+            board_state: BoardState::new(),
         }
     }  
 
+    // generates all valid moves
     pub fn generate_all_moves(&mut self) -> Vec<PieceMove> {
         Piece::ALL.iter()
             .flat_map(|piece_type| self.generate_piece_move(piece_type))
             .collect()
     }    
 
+    // execute move, update board state and swiches sides
     pub fn do_move(&mut self, piece_move: &PieceMove) {
+        match piece_move.flag {
+            MoveFlag::PromoteToQueenAndCapture | MoveFlag::PromoteToRookAndCapture | MoveFlag::PromoteToBishopAndCapture
+                | MoveFlag::PromoteToKnightAndCapture => {
+                    self.handle_capture(piece_move);
+                    self.handle_promotion(piece_move);
+                    self.board_state.en_passant = None;
+                },
+            MoveFlag::PromoteToQueen | MoveFlag::PromoteToRook | MoveFlag::PromoteToBishop
+                | MoveFlag::PromoteToKnight => {
+                    self.handle_move(piece_move);
+                    self.handle_promotion(piece_move);
+                    self.board_state.en_passant = None;
+                },
+            MoveFlag::Capture => {
+                self.handle_capture(piece_move);
+                self.board_state.en_passant = None;
+            },
+            MoveFlag::EnPassantCapture => {
+                self.handle_en_passant_capture(piece_move);
+                self.board_state.en_passant = None;
+            },
+            MoveFlag::Castling => {
+                self.handle_castle(piece_move);
+                self.board_state.en_passant = None;
+            },
+            MoveFlag::DoublePawnPush => {
+                self.handle_double_pawn_push(piece_move);
+            },
+            MoveFlag::Normal => {
+                self.handle_move(piece_move);
+                self.board_state.en_passant = None;
+            }
+        }
+
+        self.side_to_move = self.side_to_move.get_opposite();
+    }
+
+    pub fn undo_move(&mut self, piece_move: &PieceMove, board_state: BoardState) {
        todo!(); 
     }
 
-    pub fn undo_move(&mut self, piece_move: &PieceMove) {
-       todo!(); 
-    }
-
-// private
+    // generates piece (not neccecary valid) moves for a piece
     fn generate_piece_move(&mut self, piece_type: &Piece) -> Vec<PieceMove> {
         let positions = self.bitboard[*piece_type as usize][self.side_to_move as usize].clone();
 
@@ -105,10 +140,12 @@ impl Board {
     }
 
     fn validate_move_filter(&mut self, piece_move: &PieceMove) -> bool {
+        let board_state_copy = self.board_state;
+
         self.do_move(&piece_move);
         let opposite_king= self.bitboard[Piece::King as usize][self.side_to_move.get_opposite() as usize].trailing_zeros() as u8;
         let is_attacked = self.is_tile_attacked(opposite_king);
-        self.undo_move(&piece_move);
+        self.undo_move(&piece_move, board_state_copy);
         is_attacked
     }
 

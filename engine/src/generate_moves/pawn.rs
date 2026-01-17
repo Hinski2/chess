@@ -39,7 +39,7 @@ impl Board {
 
         // left captures
         const VALID_LEFT_CAPTURES_TILES: u64 = 0xfefe_fefe_fefe_fefe; // B - H 
-        let mut left_attact = ((pawn_pos & VALID_LEFT_CAPTURES_TILES) << 7) & (self.occupied[Color::Black as usize] | (1 << self.en_passant.unwrap_or(0)));
+        let mut left_attact = ((pawn_pos & VALID_LEFT_CAPTURES_TILES) << 7) & (self.occupied[Color::Black as usize] | (1 << self.board_state.en_passant.unwrap_or(0)));
         while left_attact != 0 {
             let to = left_attact.trailing_zeros() as u8;
             let from = to - 7;
@@ -49,7 +49,7 @@ impl Board {
                 moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToKnightAndCapture });
                 moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToQueenAndCapture });
                 moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToRookAndCapture });
-            } else if to == self.en_passant.unwrap_or(0) {
+            } else if to == self.board_state.en_passant.unwrap_or(0) {
                 moves.push(PieceMove { from, to, flag: MoveFlag::EnPassantCapture }); 
             } else {
                 moves.push(PieceMove { from, to, flag: MoveFlag::Capture });
@@ -60,9 +60,9 @@ impl Board {
 
         // right captures
         const VALID_RIGHT_CAPTURES_TILES: u64 = 0x7f7f_7f7f_7f7f_7f7f; // A - G 
-        let mut right_attack = ((pawn_pos & VALID_RIGHT_CAPTURES_TILES) << 9) & (self.occupied[Color::Black as usize] | (1 << self.en_passant.unwrap_or(0)));
+        let mut right_attack = ((pawn_pos & VALID_RIGHT_CAPTURES_TILES) << 9) & (self.occupied[Color::Black as usize] | (1 << self.board_state.en_passant.unwrap_or(0)));
         while right_attack != 0 { 
-            let to = right_attack.trailing_ones() as u8;
+            let to = right_attack.trailing_zeros() as u8;
             let from = to - 9;
 
             if to >= 56 {
@@ -70,7 +70,7 @@ impl Board {
                 moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToKnightAndCapture });
                 moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToQueenAndCapture });
                 moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToRookAndCapture });
-            } else if to == self.en_passant.unwrap_or(0) {
+            } else if to == self.board_state.en_passant.unwrap_or(0) {
                 moves.push(PieceMove { from, to, flag: MoveFlag::EnPassantCapture }); 
             } else {
                 moves.push(PieceMove { from, to, flag: MoveFlag::Capture });
@@ -118,7 +118,7 @@ impl Board {
 
         // left captures
         const VALID_LEFT_CAPTURES_TILES: u64 = 0x7f7f_7f7f_7f7f_7f7f; // B - H 
-        let mut left_attact = ((pawn_pos & VALID_LEFT_CAPTURES_TILES) >> 9) & (self.occupied[Color::White as usize] | (1 << self.en_passant.unwrap_or(0)));
+        let mut left_attact = ((pawn_pos & VALID_LEFT_CAPTURES_TILES) >> 9) & (self.occupied[Color::White as usize] | (1 << self.board_state.en_passant.unwrap_or(0)));
         while left_attact != 0 {
             let to = left_attact.trailing_zeros() as u8;
             let from = to - 9;
@@ -128,7 +128,7 @@ impl Board {
                 moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToKnightAndCapture });
                 moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToQueenAndCapture });
                 moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToRookAndCapture });
-            } else if to == self.en_passant.unwrap_or(0) {
+            } else if to == self.board_state.en_passant.unwrap_or(0) {
                 moves.push(PieceMove { from, to, flag: MoveFlag::EnPassantCapture }); 
             } else {
                 moves.push(PieceMove { from, to, flag: MoveFlag::Capture });
@@ -139,9 +139,9 @@ impl Board {
 
         // right captures
         const VALID_RIGHT_CAPTURES_TILES: u64 = 0xfefe_fefe_fefe_fefe;// A - G 
-        let mut right_attack = ((pawn_pos & VALID_RIGHT_CAPTURES_TILES) >> 7) & (self.occupied[Color::White as usize] | (1 << self.en_passant.unwrap_or(0)));
+        let mut right_attack = ((pawn_pos & VALID_RIGHT_CAPTURES_TILES) >> 7) & (self.occupied[Color::White as usize] | (1 << self.board_state.en_passant.unwrap_or(0)));
         while right_attack != 0 { 
-            let to = right_attack.trailing_ones() as u8;
+            let to = right_attack.trailing_zeros() as u8;
             let from = to - 7;
 
             if to < 8 {
@@ -149,7 +149,7 @@ impl Board {
                 moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToKnightAndCapture });
                 moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToQueenAndCapture });
                 moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToRookAndCapture });
-            } else if to == self.en_passant.unwrap_or(0) {
+            } else if to == self.board_state.en_passant.unwrap_or(0) {
                 moves.push(PieceMove { from, to, flag: MoveFlag::EnPassantCapture }); 
             } else {
                 moves.push(PieceMove { from, to, flag: MoveFlag::Capture });
