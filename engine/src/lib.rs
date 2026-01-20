@@ -2,6 +2,7 @@ pub mod piece_move;
 pub mod board;
 pub mod generate_moves;
 pub mod move_handlers;
+pub mod undo_move_handlers;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum Color {
@@ -91,14 +92,13 @@ impl Piece {
 #[derive(Clone, Copy)]
 pub struct BoardState {
     castle_rights: u8,
-    pub(crate) captured_piece_type: Option<Piece>,
-    pub(crate) captured_piece_idx: u8, 
+    pub(crate) captured_piece_type: Option<Piece>,  // if we captured a piece in the last move thats the type of the piece
     pub(crate) en_passant: Option<u8>,     // idx where we can attack with en passant
 }
 
 impl BoardState {
     pub fn new() -> Self {
-        BoardState { castle_rights: 0b1111, captured_piece_type: None, captured_piece_idx: 0, en_passant: None }
+        BoardState { castle_rights: 0b1111, captured_piece_type: None, en_passant: None }
     }
 
     pub(crate) fn castle_rights_white_left(&self) -> bool {

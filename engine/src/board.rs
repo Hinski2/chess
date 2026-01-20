@@ -1,6 +1,7 @@
 use crate::BoardState;
 use crate::generate_moves::king::KING_ATTACK;
 use crate::generate_moves::knight::KNIGHT_ATTACK;
+use crate::move_handlers::{EN_PASSANT_HSH, SIDE_TO_MOVE_HSH};
 use crate::piece_move::MoveFlag;
 use super::piece_move::PieceMove;
 use super::{Color, Piece, PieceColor};
@@ -8,11 +9,12 @@ use super::{Color, Piece, PieceColor};
 pub struct Board {
     pub(crate) side_to_move: Color,
 
-    pub(crate) bitboard: [[u64; 2]; 6],
-    pub(crate) occupied:  [u64; 2],
-    pub(crate) pieces:   [PieceColor; 64],
+    pub bitboard: [[u64; 2]; 6],
+    pub occupied:  [u64; 2],
+    pub pieces:   [PieceColor; 64],
 
     pub(crate) board_state: BoardState,
+    pub(crate) hsh: u64,
 }
 
 impl Board {
@@ -53,14 +55,30 @@ impl Board {
             BlackRook, BlackKnight, BlackBishop, BlackQueen, BlackKing, BlackBishop, BlackKnight, BlackRook, // rank 8, 56 - 63
         ];
 
-        Board {
+        let mut board = Board {
             side_to_move: Color::White,
             bitboard: bitboard,
             occupied: [0x0000_0000_0000_ffff, 0xffff_0000_0000_0000],
             pieces: pieces,
             board_state: BoardState::new(),
-        }
+            hsh: 0u64, // temp
+        };
+
+        board.hsh = board.compute_full_hsh();
+        board
     }  
+
+    pub fn get_size_to_move(&self) -> Color {
+        self.side_to_move
+    }
+
+    pub fn get_board_state(&self) -> BoardState {
+        self.board_state.clone()
+    }
+
+    pub fn get_board_hsh(&self) -> u64 {
+        self.hsh
+    }
 
     // generates all valid moves
     pub fn generate_all_moves(&mut self) -> Vec<PieceMove> {
@@ -71,45 +89,102 @@ impl Board {
 
     // execute move, update board state and swiches sides
     pub fn do_move(&mut self, piece_move: &PieceMove) {
+        if let Some(ep_idx) = self.board_state.en_passant {
+            self.hsh ^= EN_PASSANT_HSH[ep_idx as usize];
+            self.board_state.en_passant = None;
+        }
+
+        self.hsh ^= self.calculate_castle_hsh();
+        self.board_state.captured_piece_type = None;
         match piece_move.flag {
             MoveFlag::PromoteToQueenAndCapture | MoveFlag::PromoteToRookAndCapture | MoveFlag::PromoteToBishopAndCapture
                 | MoveFlag::PromoteToKnightAndCapture => {
                     self.handle_capture(piece_move);
                     self.handle_promotion(piece_move);
-                    self.board_state.en_passant = None;
                 },
             MoveFlag::PromoteToQueen | MoveFlag::PromoteToRook | MoveFlag::PromoteToBishop
                 | MoveFlag::PromoteToKnight => {
                     self.handle_move(piece_move);
                     self.handle_promotion(piece_move);
-                    self.board_state.en_passant = None;
                 },
             MoveFlag::Capture => {
                 self.handle_capture(piece_move);
-                self.board_state.en_passant = None;
             },
             MoveFlag::EnPassantCapture => {
                 self.handle_en_passant_capture(piece_move);
-                self.board_state.en_passant = None;
             },
             MoveFlag::Castling => {
                 self.handle_castle(piece_move);
-                self.board_state.en_passant = None;
             },
             MoveFlag::DoublePawnPush => {
                 self.handle_double_pawn_push(piece_move);
             },
             MoveFlag::Normal => {
                 self.handle_move(piece_move);
-                self.board_state.en_passant = None;
             }
+        }
+        self.hsh ^= self.calculate_castle_hsh();
+        if let Some(ep_idx) = self.board_state.en_passant {
+            self.hsh ^= EN_PASSANT_HSH[ep_idx as usize];
         }
 
         self.side_to_move = self.side_to_move.get_opposite();
+        self.hsh ^= SIDE_TO_MOVE_HSH;
     }
 
+    // undoes the last move
     pub fn undo_move(&mut self, piece_move: &PieceMove, board_state: BoardState) {
-       todo!(); 
+        // switch side
+        self.side_to_move = self.side_to_move.get_opposite();
+        self.hsh ^= SIDE_TO_MOVE_HSH;
+
+        // remove ep, castle rights
+        if let Some(ep_idx) = self.board_state.en_passant {
+            self.hsh ^= EN_PASSANT_HSH[ep_idx as usize];
+            self.board_state.en_passant = None;
+        }
+        self.hsh ^= self.calculate_castle_hsh();
+
+        // return to the old state
+        self.board_state = board_state;
+
+        match piece_move.flag {
+            MoveFlag::PromoteToQueenAndCapture | MoveFlag::PromoteToRookAndCapture | MoveFlag::PromoteToBishopAndCapture
+                | MoveFlag::PromoteToKnightAndCapture => {
+                    self.handle_undo_promotion(piece_move);
+                    self.handle_undo_capture(piece_move, &self.board_state.captured_piece_type.unwrap())
+                },
+            MoveFlag::PromoteToQueen | MoveFlag::PromoteToRook | MoveFlag::PromoteToBishop
+                | MoveFlag::PromoteToKnight => {
+                    self.handle_promotion(piece_move);
+                    self.handle_undo_move(piece_move);
+                },
+            MoveFlag::Capture => {
+                self.handle_undo_capture(piece_move, &self.board_state.captured_piece_type.unwrap());
+            },
+            MoveFlag::EnPassantCapture => {
+                self.handle_undo_en_passant_capture(piece_move);
+            },
+            MoveFlag::Castling => {
+                self.handle_undo_castle(piece_move);
+            },
+            MoveFlag::DoublePawnPush => {
+                self.handle_undo_double_pawn_push(piece_move);
+            },
+            MoveFlag::Normal => {
+                self.handle_undo_move(piece_move);
+            }
+        }
+
+        // add castle rights and ep
+        self.hsh ^= self.calculate_castle_hsh();
+        if let Some(ep_idx) = self.board_state.en_passant {
+            self.hsh ^= EN_PASSANT_HSH[ep_idx as usize];
+        }
+
+        self.board_state.captured_piece_type = None;
+        // now self.captured_piece_type is invalid but we don't need it. we will update this in this function
+        // TODO so it may be a good idea to move this atribute from Board to Game 
     }
 
     // generates piece (not neccecary valid) moves for a piece
@@ -147,6 +222,11 @@ impl Board {
         let is_attacked = self.is_tile_attacked(opposite_king);
         self.undo_move(&piece_move, board_state_copy);
         is_attacked
+    }
+
+    pub fn is_checked(&self) -> bool {
+        let king_idx = self.bitboard[Piece::King as usize][self.side_to_move as usize].trailing_zeros() as u8;
+        self.is_tile_attacked(king_idx)
     }
 
     fn is_tile_attacked(&self, idx: u8) -> bool {
