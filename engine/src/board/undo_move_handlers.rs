@@ -1,9 +1,9 @@
-use crate::{Color, Piece, PieceColor};
-use crate::board::Board;
-use crate::piece_move::{PieceMove};
+use super::{Color, Piece, PieceColor};
+use super::board::Board;
+use super::piece_move::{PieceMove};
 
 impl Board {
-    pub(crate) fn handle_undo_move(&mut self, piece_move: &PieceMove) {
+    pub(super) fn handle_undo_move(&mut self, piece_move: &PieceMove) {
         let us = self.side_to_move;
         let them = self.side_to_move.get_opposite();
 
@@ -25,7 +25,7 @@ impl Board {
         self.toggle_piece(us, piece, piece_move.from);
     }
 
-    pub(crate) fn handle_undo_capture(&mut self, piece_move: &PieceMove, captured_piece: &Piece) {
+    pub(super) fn handle_undo_capture(&mut self, piece_move: &PieceMove, captured_piece: &Piece) {
         let us = self.side_to_move;
         let them = self.side_to_move.get_opposite();
 
@@ -49,7 +49,7 @@ impl Board {
         self.toggle_piece(them, *captured_piece, piece_move.to);
     }
 
-    pub(crate) fn handle_undo_en_passant_capture(&mut self, piece_move: &PieceMove) {
+    pub(super) fn handle_undo_en_passant_capture(&mut self, piece_move: &PieceMove) {
         let us = self.side_to_move;
         let them = self.side_to_move.get_opposite();
         let victim_idx = if us == Color::White { piece_move.to - 8 } else { piece_move.to + 8};
@@ -78,7 +78,7 @@ impl Board {
         self.toggle_piece(them, Piece::Pawn, victim_idx);
     }
 
-    pub(crate) fn handle_undo_promotion(&mut self, piece_move: &PieceMove) {
+    pub(super) fn handle_undo_promotion(&mut self, piece_move: &PieceMove) {
         let to_bit = (1 << piece_move.to) as u64;
         let us = self.side_to_move;
 
@@ -96,7 +96,7 @@ impl Board {
         self.toggle_piece(us, Piece::Pawn, piece_move.to);
     }
 
-    pub(crate) fn handle_undo_castle(&mut self, piece_move: &PieceMove) {
+    pub(super) fn handle_undo_castle(&mut self, piece_move: &PieceMove) {
         let us = self.side_to_move;
         let (rook_from, rook_to) = match piece_move.to {
             6 => (7, 5), // white short
@@ -125,7 +125,7 @@ impl Board {
         self.toggle_piece(us, Piece::Rook, rook_from);
     }
 
-    pub(crate) fn handle_undo_double_pawn_push(&mut self, piece_move: &PieceMove) {
+    pub(super) fn handle_undo_double_pawn_push(&mut self, piece_move: &PieceMove) {
         let us = self.side_to_move;
         let them = self.side_to_move.get_opposite();
 

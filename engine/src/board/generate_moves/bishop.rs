@@ -1,6 +1,6 @@
-use crate::board::Board;
-use crate::piece_move::{PieceMove, MoveFlag};
-use crate::Color;
+use super::super::board::Board;
+use super::super::piece_move::{PieceMove, MoveFlag};
+use super::super::Color;
 
 impl Board {
     pub(crate) fn generate_bishop_moves_white(&self, mut bishop_pos: u64) -> Vec<PieceMove> {

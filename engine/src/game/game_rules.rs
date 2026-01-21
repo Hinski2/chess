@@ -1,9 +1,8 @@
-use engine::{Color, Piece};
-
-use crate::game::{Game, GameEnum};
+use crate::board::{Color, Piece};
+use super::game::{Game, GameEnum};
 
 impl Game {
-    pub(crate) fn check_for_insufficient_material(&self) -> bool {
+    pub(super) fn check_for_insufficient_material(&self) -> bool {
         let white_pieces = self.board.occupied[Color::White as usize].count_ones(); 
         let black_pieces = self.board.occupied[Color::Black as usize].count_ones(); 
         let total = white_pieces + black_pieces;
@@ -29,32 +28,32 @@ impl Game {
     }
 
     // check for draws
-    pub(crate) fn check_for_draws(&mut self, hsh: u64, new_half_move_clock: usize) {
+    pub(super) fn check_for_draws(&mut self, hsh: u64, new_half_move_clock: usize) {
         if new_half_move_clock >= 100 {
-            self.game = GameEnum::TieBy50Rule;
+            self.game_enum = GameEnum::TieBy50Rule;
             return;
         }
 
         if self.hshs[&hsh] >= 3 {
-            self.game = GameEnum::TieByThreefoldRepetition;
+            self.game_enum = GameEnum::TieByThreefoldRepetition;
             return;
         }
 
         if self.check_for_insufficient_material() {
-            self.game = GameEnum::TieByInsufficientMaterial;
+            self.game_enum = GameEnum::TieByInsufficientMaterial;
             return;
         }
     }
 
     // invoke it only if there is no possible moves to make
-    pub(crate) fn check_for_mate_or_stalemate(&mut self) {
+    pub fn check_for_mate_or_stalemate(&mut self) {
         if self.board.is_checked() {
-            self.game = match self.board.get_size_to_move() {
+            self.game_enum = match self.board.get_size_to_move() {
                 Color::White => GameEnum::BlackWon,
                 Color::Black => GameEnum::WhiteWon,
             }
         } else {
-            self.game = GameEnum::TieBySalemate;
+            self.game_enum = GameEnum::TieBySalemate;
         }
     }
 

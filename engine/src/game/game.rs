@@ -1,7 +1,7 @@
 use std::collections::{HashMap};
-use engine::board::Board;
-use engine::{BoardState, Piece};
-use engine::piece_move::{MoveFlag, PieceMove};
+use crate::board::board::Board;
+use crate::board::{BoardState, Piece};
+use crate::board::piece_move::{MoveFlag, PieceMove};
 
 pub(crate) struct GameState {
     piece_move: PieceMove,
@@ -9,6 +9,7 @@ pub(crate) struct GameState {
     half_move_clock: usize, // used for 50 move rule
 }
 
+#[derive(Clone)]
 pub enum GameEnum {
     InAction,
 
@@ -25,7 +26,7 @@ pub struct Game {
     pub(crate) board: Board,
     pub(crate) states: Vec<GameState>,
     pub(crate) hshs: HashMap<u64, usize>,
-    pub(crate) game: GameEnum,
+    pub(crate) game_enum: GameEnum,
 }
 
 impl Game {
@@ -33,9 +34,18 @@ impl Game {
         Game { board: Board::new(),
                states: Vec::new(),
                hshs: HashMap::new(),
-               game: GameEnum::InAction,
+               game_enum: GameEnum::InAction,
         }
     } 
+
+    pub fn from(game: &Game) -> Game {
+        Game {
+            board: game.board.clone(),
+            states: Vec::new(), 
+            hshs: game.hshs.clone(), 
+            game_enum: game.game_enum.clone(),
+        }
+    }
 
     pub fn do_move(&mut self, piece_move: PieceMove) {
         // compute new_tour_couter
@@ -60,7 +70,7 @@ impl Game {
         *self.hshs.entry(old_hsh).or_insert(0) += 1;
 
         self.check_for_draws(old_hsh, new_half_move_clock); 
-        if !matches!(self.game, GameEnum::InAction) {
+        if !matches!(self.game_enum, GameEnum::InAction) {
             return;
         }
 
@@ -74,7 +84,7 @@ impl Game {
             assert!(!self.states.is_empty());
         }
 
-        self.game = GameEnum::InAction; // because we could make the next move
+        self.game_enum = GameEnum::InAction; // because we could make the next move
         let piece_move = &self.states.last().unwrap().piece_move; 
         let board_state = self.states.last().unwrap().board_state;
 

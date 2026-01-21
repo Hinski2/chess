@@ -1,6 +1,6 @@
-use crate::board::Board;
-use crate::piece_move::{PieceMove, MoveFlag};
-use crate::Color;
+use super::super::board::Board;
+use super::super::piece_move::{PieceMove, MoveFlag};
+use super::super::Color;
 
 pub(crate) const KNIGHT_ATTACK: [u64; 64] = [  // see /notebooks/generate_moves.ipynb
 	0x0000000000020400, 0x0000000000050800, 0x00000000000a1100, 0x0000000000142200, 0x0000000000284400, 0x0000000000508800, 0x0000000000a01000, 0x0000000000402000, 
@@ -14,7 +14,7 @@ pub(crate) const KNIGHT_ATTACK: [u64; 64] = [  // see /notebooks/generate_moves.
 ];
 
 impl Board {
-    pub(crate) fn generate_knight_moves_white(&self, mut knight_pos: u64) -> Vec<PieceMove> {
+    pub(in crate::board) fn generate_knight_moves_white(&self, mut knight_pos: u64) -> Vec<PieceMove> {
         let mut moves = Vec::with_capacity(16);
         let empty: u64 = !(self.occupied[Color::White as usize] | self.occupied[Color::Black as usize]);
         let enemy: u64 = self.occupied[Color::Black as usize];
@@ -48,7 +48,7 @@ impl Board {
         return moves;
     }
 
-    pub(crate) fn generate_knight_moves_black(&self, mut knight_pos: u64) -> Vec<PieceMove> {
+    pub(in crate::board) fn generate_knight_moves_black(&self, mut knight_pos: u64) -> Vec<PieceMove> {
         let mut moves = Vec::with_capacity(16);
         let empty: u64 = !(self.occupied[Color::White as usize] | self.occupied[Color::Black as usize]);
         let enemy: u64 = self.occupied[Color::White as usize];

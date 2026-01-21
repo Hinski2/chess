@@ -1,9 +1,9 @@
-use crate::board::Board;
-use crate::piece_move::{PieceMove, MoveFlag};
-use crate::Color;
+use super::super::board::Board;
+use super::super::piece_move::{PieceMove, MoveFlag};
+use super::super::Color;
 
 impl Board {
-    pub(crate) fn generate_pawn_moves_white(&self, pawn_pos: u64) -> Vec<PieceMove> {
+    pub(in crate::board) fn generate_pawn_moves_white(&self, pawn_pos: u64) -> Vec<PieceMove> {
         // setup
         let empty_tiles = !(self.occupied[Color::White as usize] | self.occupied[Color::Black as usize]);
         let mut moves = Vec::with_capacity(16);
@@ -82,7 +82,7 @@ impl Board {
         return moves;
     }
 
-    pub(crate) fn generate_pawn_moves_black(&self, pawn_pos: u64) -> Vec<PieceMove> {
+    pub(in crate::board) fn generate_pawn_moves_black(&self, pawn_pos: u64) -> Vec<PieceMove> {
         // setup
         let empty_tiles = !(self.occupied[Color::White as usize] | self.occupied[Color::Black as usize]);
         let mut moves = Vec::with_capacity(16);

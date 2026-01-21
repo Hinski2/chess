@@ -1,9 +1,9 @@
-use crate::board::Board;
-use crate::piece_move::{PieceMove, MoveFlag};
-use crate::Color;
+use super::super::board::Board;
+use super::super::piece_move::{PieceMove, MoveFlag};
+use super::super::Color;
 
 impl Board {
-    pub(crate) fn generate_rook_moves_white(&self, mut rook_pos: u64) -> Vec<PieceMove> {
+    pub(in crate::board) fn generate_rook_moves_white(&self, mut rook_pos: u64) -> Vec<PieceMove> {
         let mut moves = Vec::with_capacity(16);
         let empty = !(self.occupied[Color::White as usize] | self.occupied[Color::Black as usize]);
         let enemy = self.occupied[Color::Black as usize];
@@ -70,7 +70,7 @@ impl Board {
         moves
     }
 
-    pub(crate) fn generate_rook_moves_black(&self, mut rook_pos: u64) -> Vec<PieceMove> {
+    pub(in crate::board) fn generate_rook_moves_black(&self, mut rook_pos: u64) -> Vec<PieceMove> {
         let mut moves = Vec::with_capacity(16);
         let empty = !(self.occupied[Color::White as usize] | self.occupied[Color::Black as usize]);
         let enemy = self.occupied[Color::White as usize];

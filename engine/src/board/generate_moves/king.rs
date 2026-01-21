@@ -1,6 +1,6 @@
-use crate::board::Board;
-use crate::piece_move::{PieceMove, MoveFlag};
-use crate::Color;
+use super::super::board::Board;
+use super::super::piece_move::{PieceMove, MoveFlag};
+use super::super::Color;
 
 pub(crate) const KING_ATTACK: [u64; 64] = [
 	0x0000000000000302, 0x0000000000000705, 0x0000000000000e0a, 0x0000000000001c14, 0x0000000000003828, 0x0000000000007050, 0x000000000000e0a0, 0x000000000000c040, 
@@ -15,7 +15,7 @@ pub(crate) const KING_ATTACK: [u64; 64] = [
 
 
 impl Board {
-    pub(crate) fn generate_king_moves_white(&self, king_pos: u64) -> Vec<PieceMove> {
+    pub(in crate::board) fn generate_king_moves_white(&self, king_pos: u64) -> Vec<PieceMove> {
         let mut moves = Vec::with_capacity(8);
         let empty: u64 = !(self.occupied[Color::White as usize] | self.occupied[Color::Black as usize]);
         let enemy: u64 = self.occupied[Color::Black as usize];
@@ -43,7 +43,7 @@ impl Board {
     }
 
 
-    pub(crate) fn generate_king_moves_black(&self, king_pos: u64) -> Vec<PieceMove> {
+    pub(in crate::board) fn generate_king_moves_black(&self, king_pos: u64) -> Vec<PieceMove> {
         let mut moves = Vec::with_capacity(8);
         let empty: u64 = !(self.occupied[Color::White as usize] | self.occupied[Color::Black as usize]);
         let enemy: u64 = self.occupied[Color::White as usize];

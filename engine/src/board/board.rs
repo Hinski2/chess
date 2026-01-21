@@ -1,20 +1,21 @@
-use crate::BoardState;
-use crate::generate_moves::king::KING_ATTACK;
-use crate::generate_moves::knight::KNIGHT_ATTACK;
-use crate::move_handlers::{EN_PASSANT_HSH, SIDE_TO_MOVE_HSH};
-use crate::piece_move::MoveFlag;
+use super::BoardState;
+use super::generate_moves::king::KING_ATTACK;
+use super::generate_moves::knight::KNIGHT_ATTACK;
+use super::move_handlers::{EN_PASSANT_HSH, SIDE_TO_MOVE_HSH};
+use super::piece_move::MoveFlag;
 use super::piece_move::PieceMove;
 use super::{Color, Piece, PieceColor};
 
+#[derive(Clone)]
 pub struct Board {
-    pub(crate) side_to_move: Color,
+    pub(super) side_to_move: Color,
 
-    pub bitboard: [[u64; 2]; 6],
-    pub occupied:  [u64; 2],
-    pub pieces:   [PieceColor; 64],
+    pub(crate) bitboard: [[u64; 2]; 6],
+    pub(crate) occupied:  [u64; 2],
+    pub(crate) pieces:   [PieceColor; 64],
 
-    pub(crate) board_state: BoardState,
-    pub(crate) hsh: u64,
+    pub(super) board_state: BoardState,
+    pub(super) hsh: u64,
 }
 
 impl Board {

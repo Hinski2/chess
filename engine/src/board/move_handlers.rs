@@ -1,6 +1,6 @@
-use crate::{Color, Piece, PieceColor};
-use crate::board::Board;
-use crate::piece_move::{MoveFlag, PieceMove};
+use super::{Color, Piece, PieceColor};
+use super::board::Board;
+use super::piece_move::{MoveFlag, PieceMove};
 
 const CASTLING_RIGHTS_UPDATE: [u8; 64] = [
     0b1101, 0b1111, 0b1111, 0b1111, 0b1100, 0b1111, 0b1111, 0b1110,
@@ -33,14 +33,14 @@ const CASTLE_HSH: [u64; 4] = [
 	0xf1b455e8b32ba0bau64, 0x7a7b0a46ea54664fu64, 0x1b3cedc499063c95u64, 0x125b2ab39fbfbdfeu64, 
 ];
 
-pub(crate) const EN_PASSANT_HSH: [u64; 8] = [
+pub(super) const EN_PASSANT_HSH: [u64; 8] = [
 	0xc748843721c0ccc1u64, 0x6e64045c3a47b82fu64, 0x5541cde174a08dd2u64, 0x76787d176b0c1412u64, 0xb6a9d18d16369af1u64, 0x02d4431d10dfc13bu64, 0x13aa0ef5bf11f423u64, 0x55b8eb025e2c33f5u64, 
 ];
 
-pub(crate) const SIDE_TO_MOVE_HSH: u64 = 0x189fb87cbba377deu64;
+pub(super) const SIDE_TO_MOVE_HSH: u64 = 0x189fb87cbba377deu64;
 
 impl Board {
-    pub(crate) fn calculate_castle_hsh(&self) -> u64 {
+    pub(super) fn calculate_castle_hsh(&self) -> u64 {
         let mut hsh = 0u64;
 
         if self.board_state.castle_rights_white_left() { hsh ^= CASTLE_HSH[0]; }
@@ -51,7 +51,7 @@ impl Board {
         hsh
     }
 
-    pub(crate) fn compute_full_hsh(&self) -> u64 {
+    pub(super) fn compute_full_hsh(&self) -> u64 {
         let mut hsh = 0u64;
 
         for idx in 0..64 {
@@ -80,7 +80,7 @@ impl Board {
         hsh
     }
 
-    pub(crate) fn handle_move(&mut self, piece_move: &PieceMove) {
+    pub(super) fn handle_move(&mut self, piece_move: &PieceMove) {
         let us = self.side_to_move;
         let them = self.side_to_move.get_opposite();
 
@@ -107,7 +107,7 @@ impl Board {
         self.board_state.castle_rights &= CASTLING_RIGHTS_UPDATE[piece_move.from as usize];
     }
 
-    pub(crate) fn handle_capture(&mut self, piece_move: &PieceMove) {
+    pub(super) fn handle_capture(&mut self, piece_move: &PieceMove) {
         let us = self.side_to_move;
         let them = self.side_to_move.get_opposite();
 
@@ -142,7 +142,7 @@ impl Board {
         self.board_state.captured_piece_type = Some(their_piece);
     }
 
-    pub(crate) fn handle_en_passant_capture(&mut self, piece_move: &PieceMove) {
+    pub(super) fn handle_en_passant_capture(&mut self, piece_move: &PieceMove) {
         let us = self.side_to_move;
         let them = self.side_to_move.get_opposite();
         let victim_idx = if us == Color::White { piece_move.to - 8 } else { piece_move.to + 8};
@@ -178,7 +178,7 @@ impl Board {
     }
 
     // updates piece and the .to
-    pub(crate) fn handle_promotion(&mut self, piece_move: &PieceMove) {
+    pub(super) fn handle_promotion(&mut self, piece_move: &PieceMove) {
         let to_bit = (1 << piece_move.to) as u64;
         let us = self.side_to_move;
 
@@ -201,7 +201,7 @@ impl Board {
         }
     }
 
-    pub(crate) fn handle_castle(&mut self, piece_move: &PieceMove) {
+    pub(super) fn handle_castle(&mut self, piece_move: &PieceMove) {
         let us = self.side_to_move;
         let (rook_from, rook_to) = match piece_move.to {
             6 => (7, 5), // white short
@@ -233,7 +233,7 @@ impl Board {
         self.board_state.castle_rights &= CASTLING_RIGHTS_UPDATE[piece_move.to as usize];
     }
 
-    pub(crate) fn handle_double_pawn_push(&mut self, piece_move: &PieceMove) {
+    pub(super) fn handle_double_pawn_push(&mut self, piece_move: &PieceMove) {
         let us = self.side_to_move;
         let them = self.side_to_move.get_opposite();
 
@@ -261,7 +261,7 @@ impl Board {
         );
     }
 
-    pub(crate) fn toggle_piece(&mut self, color: Color, piece: Piece, idx: u8) {
+    pub(super) fn toggle_piece(&mut self, color: Color, piece: Piece, idx: u8) {
         let bit = 1u64 << idx;
         self.occupied[color as usize] ^= bit;
         self.bitboard[piece as usize][color as usize] ^= bit;
