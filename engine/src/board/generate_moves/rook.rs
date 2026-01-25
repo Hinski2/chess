@@ -15,9 +15,9 @@ impl Board {
             // left
             for j in (0..y).rev() {
                 let _idx = x * 8 + j;
-                if empty & (1 << _idx) > 0 {
+                if empty & (1u64 << _idx) > 0 {
                     moves.push(PieceMove { from: idx, to: _idx, flag: MoveFlag::Normal })
-                } else if enemy & (1 << _idx) > 0 {
+                } else if enemy & (1u64 << _idx) > 0 {
                     moves.push(PieceMove { from: idx, to: _idx, flag: MoveFlag::Capture });
                     break;
                 } else {
@@ -28,9 +28,9 @@ impl Board {
             // right 
             for j in y + 1..8 {
                 let _idx = x * 8 + j;
-                if empty & (1 << _idx) > 0 {
+                if empty & (1u64 << _idx) > 0 {
                     moves.push(PieceMove { from: idx, to: _idx, flag: MoveFlag::Normal })
-                } else if enemy & (1 << _idx) > 0 {
+                } else if enemy & (1u64 << _idx) > 0 {
                     moves.push(PieceMove { from: idx, to: _idx, flag: MoveFlag::Capture });
                     break;
                 } else {
@@ -41,9 +41,9 @@ impl Board {
             // up 
             for i in (0..x).rev() {
                 let _idx = i * 8 + y;
-                if empty & (1 << _idx) > 0 {
+                if empty & (1u64 << _idx) > 0 {
                     moves.push(PieceMove { from: idx, to: _idx, flag: MoveFlag::Normal })
-                } else if enemy & (1 << _idx) > 0 {
+                } else if enemy & (1u64 << _idx) > 0 {
                     moves.push(PieceMove { from: idx, to: _idx, flag: MoveFlag::Capture });
                     break;
                 } else {
@@ -54,9 +54,9 @@ impl Board {
             // down
             for i in x + 1..8 {
                 let _idx = i * 8 + y;
-                if empty & (1 << _idx) > 0 {
+                if empty & (1u64 << _idx) > 0 {
                     moves.push(PieceMove { from: idx, to: _idx, flag: MoveFlag::Normal })
-                } else if enemy & (1 << _idx) > 0 {
+                } else if enemy & (1u64 << _idx) > 0 {
                     moves.push(PieceMove { from: idx, to: _idx, flag: MoveFlag::Capture });
                     break;
                 } else {
@@ -82,9 +82,9 @@ impl Board {
             // left
             for j in (0..y).rev() {
                 let _idx = x * 8 + j;
-                if empty & (1 << _idx) > 0 {
+                if empty & (1u64 << _idx) > 0 {
                     moves.push(PieceMove { from: idx, to: _idx, flag: MoveFlag::Normal })
-                } else if enemy & (1 << _idx) > 0 {
+                } else if enemy & (1u64 << _idx) > 0 {
                     moves.push(PieceMove { from: idx, to: _idx, flag: MoveFlag::Capture });
                     break;
                 } else {
@@ -95,9 +95,9 @@ impl Board {
             // right 
             for j in y + 1..8 {
                 let _idx = x * 8 + j;
-                if empty & (1 << _idx) > 0 {
+                if empty & (1u64 << _idx) > 0 {
                     moves.push(PieceMove { from: idx, to: _idx, flag: MoveFlag::Normal })
-                } else if enemy & (1 << _idx) > 0 {
+                } else if enemy & (1u64 << _idx) > 0 {
                     moves.push(PieceMove { from: idx, to: _idx, flag: MoveFlag::Capture });
                     break;
                 } else {
@@ -108,9 +108,9 @@ impl Board {
             // up 
             for i in (0..x).rev() {
                 let _idx = i * 8 + y;
-                if empty & (1 << _idx) > 0 {
+                if empty & (1u64 << _idx) > 0 {
                     moves.push(PieceMove { from: idx, to: _idx, flag: MoveFlag::Normal })
-                } else if enemy & (1 << _idx) > 0 {
+                } else if enemy & (1u64 << _idx) > 0 {
                     moves.push(PieceMove { from: idx, to: _idx, flag: MoveFlag::Capture });
                     break;
                 } else {
@@ -121,9 +121,9 @@ impl Board {
             // down
             for i in x + 1..8 {
                 let _idx = i * 8 + y;
-                if empty & (1 << _idx) > 0 {
+                if empty & (1u64 << _idx) > 0 {
                     moves.push(PieceMove { from: idx, to: _idx, flag: MoveFlag::Normal })
-                } else if enemy & (1 << _idx) > 0 {
+                } else if enemy & (1u64 << _idx) > 0 {
                     moves.push(PieceMove { from: idx, to: _idx, flag: MoveFlag::Capture });
                     break;
                 } else {

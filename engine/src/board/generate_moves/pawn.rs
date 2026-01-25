@@ -7,6 +7,10 @@ impl Board {
         // setup
         let empty_tiles = !(self.occupied[Color::White as usize] | self.occupied[Color::Black as usize]);
         let mut moves = Vec::with_capacity(16);
+        let ep_mask = match self.board_state.en_passant {
+            Some(idx) => 1u64 << idx,
+            None => 0,
+        };
 
         // single push
         let mut single_push = (pawn_pos << 8) & empty_tiles;
@@ -39,7 +43,7 @@ impl Board {
 
         // left captures
         const VALID_LEFT_CAPTURES_TILES: u64 = 0xfefe_fefe_fefe_fefe; // B - H 
-        let mut left_attact = ((pawn_pos & VALID_LEFT_CAPTURES_TILES) << 7) & (self.occupied[Color::Black as usize] | (1 << self.board_state.en_passant.unwrap_or(0)));
+        let mut left_attact = ((pawn_pos & VALID_LEFT_CAPTURES_TILES) << 7) & (self.occupied[Color::Black as usize] | ep_mask);
         while left_attact != 0 {
             let to = left_attact.trailing_zeros() as u8;
             let from = to - 7;
@@ -60,7 +64,7 @@ impl Board {
 
         // right captures
         const VALID_RIGHT_CAPTURES_TILES: u64 = 0x7f7f_7f7f_7f7f_7f7f; // A - G 
-        let mut right_attack = ((pawn_pos & VALID_RIGHT_CAPTURES_TILES) << 9) & (self.occupied[Color::Black as usize] | (1 << self.board_state.en_passant.unwrap_or(0)));
+        let mut right_attack = ((pawn_pos & VALID_RIGHT_CAPTURES_TILES) << 9) & (self.occupied[Color::Black as usize] | ep_mask);
         while right_attack != 0 { 
             let to = right_attack.trailing_zeros() as u8;
             let from = to - 9;
@@ -86,6 +90,10 @@ impl Board {
         // setup
         let empty_tiles = !(self.occupied[Color::White as usize] | self.occupied[Color::Black as usize]);
         let mut moves = Vec::with_capacity(16);
+        let ep_mask = match self.board_state.en_passant {
+            Some(idx) => 1u64 << idx,
+            None => 0,
+        };
 
         // single push
         let mut single_push = (pawn_pos >> 8) & empty_tiles;
@@ -117,11 +125,11 @@ impl Board {
         }
 
         // left captures
-        const VALID_LEFT_CAPTURES_TILES: u64 = 0x7f7f_7f7f_7f7f_7f7f; // B - H 
-        let mut left_attact = ((pawn_pos & VALID_LEFT_CAPTURES_TILES) >> 9) & (self.occupied[Color::White as usize] | (1 << self.board_state.en_passant.unwrap_or(0)));
+        const VALID_LEFT_CAPTURES_TILES: u64 = 0xfefe_fefe_fefe_fefe; // B - H 
+        let mut left_attact = ((pawn_pos & VALID_LEFT_CAPTURES_TILES) >> 9) & (self.occupied[Color::White as usize] | ep_mask);
         while left_attact != 0 {
             let to = left_attact.trailing_zeros() as u8;
-            let from = to - 9;
+            let from = to + 9;
 
             if to < 8 {
                 moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToBishopAndCapture });
@@ -138,11 +146,11 @@ impl Board {
         }
 
         // right captures
-        const VALID_RIGHT_CAPTURES_TILES: u64 = 0xfefe_fefe_fefe_fefe;// A - G 
-        let mut right_attack = ((pawn_pos & VALID_RIGHT_CAPTURES_TILES) >> 7) & (self.occupied[Color::White as usize] | (1 << self.board_state.en_passant.unwrap_or(0)));
+        const VALID_RIGHT_CAPTURES_TILES: u64 = 0x7f7f_7f7f_7f7f_7f7f;// A - G 
+        let mut right_attack = ((pawn_pos & VALID_RIGHT_CAPTURES_TILES) >> 7) & (self.occupied[Color::White as usize] | ep_mask);
         while right_attack != 0 { 
             let to = right_attack.trailing_zeros() as u8;
-            let from = to - 7;
+            let from = to + 7;
 
             if to < 8 {
                 moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToBishopAndCapture });

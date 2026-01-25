@@ -1,5 +1,5 @@
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum MoveFlag {
     PromoteToQueenAndCapture,
     PromoteToRookAndCapture,
@@ -17,9 +17,11 @@ pub enum MoveFlag {
     Castling,
     DoublePawnPush,
     Normal, 
+
+    None, 
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct PieceMove {
     pub from: u8, 
     pub to: u8,

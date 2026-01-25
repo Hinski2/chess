@@ -21,9 +21,9 @@ impl Board {
                 while 0 <= _pos.0 && _pos.0 < 8 && 0 <= _pos.1 && _pos.1 < 8 {
                     let to = (_pos.0 * 8 + _pos.1) as u8;
 
-                    if (1 << to) & empty > 0 {
+                    if (1u64 << to) & empty > 0 {
                         moves.push(PieceMove { from, to, flag: MoveFlag::Normal });
-                    } else if (1 << to) & enemy > 0 {
+                    } else if (1u64 << to) & enemy > 0 {
                         moves.push(PieceMove { from, to, flag: MoveFlag::Capture });
                         break;
                     } else {
@@ -59,9 +59,9 @@ impl Board {
                 while 0 <= _pos.0 && _pos.0 < 8 && 0 <= _pos.1 && _pos.1 < 8 {
                     let to = (_pos.0 * 8 + _pos.1) as u8;
 
-                    if (1 << to) & empty > 0 {
+                    if (1u64 << to) & empty > 0 {
                         moves.push(PieceMove { from, to, flag: MoveFlag::Normal });
-                    } else if (1 << to) & enemy > 0 {
+                    } else if (1u64 << to) & enemy > 0 {
                         moves.push(PieceMove { from, to, flag: MoveFlag::Capture });
                         break;
                     } else {

@@ -1,3 +1,5 @@
+use core::fmt;
+
 use super::BoardState;
 use super::generate_moves::king::KING_ATTACK;
 use super::generate_moves::knight::KNIGHT_ATTACK;
@@ -10,8 +12,8 @@ use super::{Color, Piece, PieceColor};
 pub struct Board {
     pub(super) side_to_move: Color,
 
-    pub(crate) bitboard: [[u64; 2]; 6],
-    pub(crate) occupied:  [u64; 2],
+    pub bitboard: [[u64; 2]; 6],
+    pub occupied:  [u64; 2],
     pub(crate) pieces:   [PieceColor; 64],
 
     pub(super) board_state: BoardState,
@@ -81,17 +83,17 @@ impl Board {
         self.hsh
     }
 
-    // generates all valid moves
+    /// generates all valid moves
     pub fn generate_all_moves(&mut self) -> Vec<PieceMove> {
         Piece::ALL.iter()
             .flat_map(|piece_type| self.generate_piece_move(piece_type))
             .collect()
     }    
 
-    // execute move, update board state and swiches sides
+    /// execute move, update board state and swiches sides
     pub fn do_move(&mut self, piece_move: &PieceMove) {
         if let Some(ep_idx) = self.board_state.en_passant {
-            self.hsh ^= EN_PASSANT_HSH[ep_idx as usize];
+            self.hsh ^= EN_PASSANT_HSH[(ep_idx % 8) as usize];
             self.board_state.en_passant = None;
         }
 
@@ -123,26 +125,28 @@ impl Board {
             MoveFlag::Normal => {
                 self.handle_move(piece_move);
             }
+            MoveFlag::None => unreachable!(),
         }
         self.hsh ^= self.calculate_castle_hsh();
         if let Some(ep_idx) = self.board_state.en_passant {
-            self.hsh ^= EN_PASSANT_HSH[ep_idx as usize];
+            self.hsh ^= EN_PASSANT_HSH[(ep_idx % 8) as usize];
         }
 
         self.side_to_move = self.side_to_move.get_opposite();
         self.hsh ^= SIDE_TO_MOVE_HSH;
     }
 
-    // undoes the last move
+    /// undoes the last move
     pub fn undo_move(&mut self, piece_move: &PieceMove, board_state: BoardState) {
+        let captured_piece_type = self.board_state.captured_piece_type;
+
         // switch side
         self.side_to_move = self.side_to_move.get_opposite();
         self.hsh ^= SIDE_TO_MOVE_HSH;
 
         // remove ep, castle rights
         if let Some(ep_idx) = self.board_state.en_passant {
-            self.hsh ^= EN_PASSANT_HSH[ep_idx as usize];
-            self.board_state.en_passant = None;
+            self.hsh ^= EN_PASSANT_HSH[(ep_idx % 8) as usize];
         }
         self.hsh ^= self.calculate_castle_hsh();
 
@@ -153,15 +157,15 @@ impl Board {
             MoveFlag::PromoteToQueenAndCapture | MoveFlag::PromoteToRookAndCapture | MoveFlag::PromoteToBishopAndCapture
                 | MoveFlag::PromoteToKnightAndCapture => {
                     self.handle_undo_promotion(piece_move);
-                    self.handle_undo_capture(piece_move, &self.board_state.captured_piece_type.unwrap())
+                    self.handle_undo_capture(piece_move, &captured_piece_type.unwrap())
                 },
             MoveFlag::PromoteToQueen | MoveFlag::PromoteToRook | MoveFlag::PromoteToBishop
                 | MoveFlag::PromoteToKnight => {
-                    self.handle_promotion(piece_move);
+                    self.handle_undo_promotion(piece_move);
                     self.handle_undo_move(piece_move);
                 },
             MoveFlag::Capture => {
-                self.handle_undo_capture(piece_move, &self.board_state.captured_piece_type.unwrap());
+                self.handle_undo_capture(piece_move, &captured_piece_type.unwrap());
             },
             MoveFlag::EnPassantCapture => {
                 self.handle_undo_en_passant_capture(piece_move);
@@ -175,12 +179,13 @@ impl Board {
             MoveFlag::Normal => {
                 self.handle_undo_move(piece_move);
             }
+            MoveFlag::None => unreachable!(),
         }
 
         // add castle rights and ep
         self.hsh ^= self.calculate_castle_hsh();
         if let Some(ep_idx) = self.board_state.en_passant {
-            self.hsh ^= EN_PASSANT_HSH[ep_idx as usize];
+            self.hsh ^= EN_PASSANT_HSH[(ep_idx % 8) as usize];
         }
 
         self.board_state.captured_piece_type = None;
@@ -216,13 +221,17 @@ impl Board {
     }
 
     fn validate_move_filter(&mut self, piece_move: &PieceMove) -> bool {
-        let board_state_copy = self.board_state;
+        let board_state_copy: BoardState = self.board_state;
 
         self.do_move(&piece_move);
+        // println!("do:{:?}\n{}", &piece_move, self); // !!!!!!!1
+
         let opposite_king= self.bitboard[Piece::King as usize][self.side_to_move.get_opposite() as usize].trailing_zeros() as u8;
         let is_attacked = self.is_tile_attacked(opposite_king);
         self.undo_move(&piece_move, board_state_copy);
-        is_attacked
+        // println!("undo:{:?}\n{}", &piece_move, self); // !!!!!!!1
+
+        !is_attacked
     }
 
     pub fn is_checked(&self) -> bool {
@@ -247,14 +256,14 @@ impl Board {
             while 0 <= _pos.0 && _pos.0 < 8 && 0 <= _pos.1 && _pos.1 < 8 {
                 let to = _pos.0 * 8 + _pos.1;
 
-                if our_pieces & (1 << to) > 0 {
+                if our_pieces & (1u64 << to) > 0 {
                     if (self.bitboard[Piece::Bishop as usize][self.side_to_move as usize] 
-                        | self.bitboard[Piece::Queen as usize][self.side_to_move as usize]) & (1 << to) > 0 {
+                        | self.bitboard[Piece::Queen as usize][self.side_to_move as usize]) & (1u64 << to) > 0 {
                         return true;
                     } else {
                         break;
                     }
-                } else if empty & (1 << to) > 0 {
+                } else if empty & (1u64 << to) > 0 {
                     _pos.0 += shift.0; 
                     _pos.1 += shift.1;
                 } else {
@@ -271,14 +280,14 @@ impl Board {
             while 0 <= _pos.0 && _pos.0 < 8 && 0 <= _pos.1 && _pos.1 < 8 {
                 let to = _pos.0 * 8 + _pos.1;
 
-                if our_pieces & (1 << to) > 0 {
+                if our_pieces & (1u64 << to) > 0 {
                     if (self.bitboard[Piece::Rook as usize][self.side_to_move as usize] 
-                        | self.bitboard[Piece::Queen as usize][self.side_to_move as usize]) & (1 << to) > 0{
+                        | self.bitboard[Piece::Queen as usize][self.side_to_move as usize]) & (1u64 << to) > 0{
                         return true;
                     } else {
                         break;
                     }
-                } else if empty & (1 << to) > 0 {
+                } else if empty & (1u64 << to) > 0 {
                     _pos.0 += shift.0; 
                     _pos.1 += shift.1;
                 } else {
@@ -295,14 +304,14 @@ impl Board {
         // pawn
         match self.side_to_move {
             Color::Black if x < 7 => {
-                if (y != 0 && (1 << (idx + 7)) & self.bitboard[Piece::Pawn as usize][Color::Black as usize] > 0) 
-                    || (y != 7 && (1 << (idx + 9)) & self.bitboard[Piece::Pawn as usize][Color::Black as usize] > 0) {
+                if (y != 0 && (1u64 << (idx + 7)) & self.bitboard[Piece::Pawn as usize][Color::Black as usize] > 0) 
+                    || (y != 7 && (1u64 << (idx + 9)) & self.bitboard[Piece::Pawn as usize][Color::Black as usize] > 0) {
                     return true
                 }
             },
             Color::White if x > 0 => {
-                if (y != 7 && (1 << (idx - 7)) & self.bitboard[Piece::Pawn as usize][Color::White as usize] > 0) 
-                    || (y != 0 && (1 << (idx - 9)) & self.bitboard[Piece::Pawn as usize][Color::White as usize] > 0) {
+                if (y != 7 && (1u64 << (idx - 7)) & self.bitboard[Piece::Pawn as usize][Color::White as usize] > 0) 
+                    || (y != 0 && (1u64 << (idx - 9)) & self.bitboard[Piece::Pawn as usize][Color::White as usize] > 0) {
                     return true
                 }
             },
@@ -316,5 +325,58 @@ impl Board {
 
         return false;
     }
+
+
+    fn get_piece_char_and_color(&self, square_idx: usize) -> (char, &'static str) {
+        let bit = 1u64 << square_idx;
+
+        let is_white = self.occupied[Color::White as usize] & bit != 0;
+        let is_black = self.occupied[Color::Black as usize] & bit != 0;
+
+        if !is_white && !is_black {
+            return (' ', "");
+        }
+
+        let color = if is_white { "\x1b[97m\x1b[1m" } else { "\x1b[30m\x1b[1m" };
+        let piece = 
+            if self.bitboard[Piece::Pawn as usize][Color::White as usize] & bit != 0 { '♟' }
+            else if self.bitboard[Piece::Pawn as usize][Color::Black as usize] & bit != 0 { '♙' }
+            else if self.bitboard[Piece::Knight as usize][Color::White as usize] & bit != 0 { '♞' }
+            else if self.bitboard[Piece::Knight as usize][Color::Black as usize] & bit != 0 { '♘' }
+            else if self.bitboard[Piece::Bishop as usize][Color::White as usize] & bit != 0 { '♝' }
+            else if self.bitboard[Piece::Bishop as usize][Color::Black as usize] & bit != 0 { '♗' }
+            else if self.bitboard[Piece::Rook as usize][Color::White as usize] & bit != 0 { '♜' }
+            else if self.bitboard[Piece::Rook as usize][Color::Black as usize] & bit != 0 { '♖' }
+            else if self.bitboard[Piece::Queen as usize][Color::White as usize] & bit != 0 { '♛' }
+            else if self.bitboard[Piece::Queen as usize][Color::Black as usize] & bit != 0 { '♕' }
+            else if self.bitboard[Piece::King as usize][Color::White as usize] & bit != 0 { '♚' }
+            else { '♔' };
+
+        (piece, color)
+    }
+
 }
 
+impl fmt::Display for Board {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut output = String::new();
+
+        for rank in (0..8).rev() {
+            output.push_str(&format!("{} |", rank + 1));
+
+            for file in 0..8 {
+                let square_idx = rank * 8 + file;
+                let is_light_square = (rank + file) % 2 != 0;
+                
+                let bg_color = if is_light_square { "\x1b[48;5;209m" } else { "\x1b[48;5;94m" };
+                let (symbol, fg_color) = self.get_piece_char_and_color(square_idx);
+                
+                output.push_str(&format!("{}{}{} \x1b[0m", bg_color, fg_color, symbol));
+            }
+            output.push_str("|\n");
+        }
+        output.push_str("   a b c d e f g h");
+        
+        write!(f, "{}", output)
+    }
+}

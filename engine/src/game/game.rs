@@ -9,7 +9,7 @@ pub(crate) struct GameState {
     half_move_clock: usize, // used for 50 move rule
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum GameEnum {
     InAction,
 
@@ -23,10 +23,10 @@ pub enum GameEnum {
 }
 
 pub struct Game {
-    pub(crate) board: Board,
+    pub board: Board,
     pub(crate) states: Vec<GameState>,
     pub(crate) hshs: HashMap<u64, usize>,
-    pub(crate) game_enum: GameEnum,
+    pub game_enum: GameEnum,
 }
 
 impl Game {
@@ -46,8 +46,19 @@ impl Game {
             game_enum: game.game_enum.clone(),
         }
     }
+    
+    /// updates game_enum if it's game over
+    pub fn try_update_game_enum(&mut self) {
 
-    pub fn do_move(&mut self, piece_move: PieceMove) {
+        let moves = self.board.generate_all_moves();
+        if moves.is_empty() {
+            self.check_for_mate_or_stalemate();
+        }
+    }
+    
+    /// makes the move and update gameEnum for draws,
+    /// you have to handle gameEnum for end separately
+    pub fn do_move(&mut self, piece_move: &PieceMove) {
         // compute new_tour_couter
         let new_half_move_clock = if self.states.is_empty() { 0 } else {
             self.states.last().unwrap().half_move_clock
@@ -78,7 +89,7 @@ impl Game {
         self.board.do_move(&piece_move);
     }
 
-    // undo last move
+    /// undo last move
     pub fn undo_move(&mut self) {
         if cfg!(debug_assertions) {
             assert!(!self.states.is_empty());

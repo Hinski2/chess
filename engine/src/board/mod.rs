@@ -4,7 +4,7 @@ pub mod generate_moves;
 pub mod move_handlers;
 pub mod undo_move_handlers;
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum Color {
     White,
     Black,

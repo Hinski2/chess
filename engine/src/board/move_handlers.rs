@@ -85,8 +85,8 @@ impl Board {
         let them = self.side_to_move.get_opposite();
 
         if cfg!(debug_assertions) {
-            let from_bit = (1 << piece_move.from) as u64;
-            let to_bit = (1 << piece_move.to) as u64;
+            let from_bit = 1u64 << piece_move.from;
+            let to_bit = 1u64 << piece_move.to;
 
             assert!(self.occupied[us as usize] & from_bit > 0);
             assert!(self.occupied[them as usize] & from_bit == 0);
@@ -112,8 +112,8 @@ impl Board {
         let them = self.side_to_move.get_opposite();
 
         if cfg!(debug_assertions) {
-            let from_bit = (1 << piece_move.from) as u64;
-            let to_bit  = (1 << piece_move.to) as u64;
+            let from_bit = 1u64 << piece_move.from;
+            let to_bit  = 1u64 << piece_move.to;
 
             assert!(self.occupied[us as usize] & from_bit > 0);
             assert!(self.occupied[them as usize] & from_bit == 0);
@@ -148,9 +148,9 @@ impl Board {
         let victim_idx = if us == Color::White { piece_move.to - 8 } else { piece_move.to + 8};
 
         if cfg!(debug_assertions) {
-            let from_bit = (1 << piece_move.from) as u64;
-            let to_bit  = (1 << piece_move.to) as u64;
-            let victim_bit = (1 << victim_idx) as u64;
+            let from_bit = 1u64 << piece_move.from;
+            let to_bit  = 1u64 << piece_move.to;
+            let victim_bit = 1u64 << victim_idx;
 
             assert!(self.occupied[us as usize] & from_bit > 0);
             assert!(self.occupied[them as usize] & from_bit == 0);
@@ -179,7 +179,7 @@ impl Board {
 
     // updates piece and the .to
     pub(super) fn handle_promotion(&mut self, piece_move: &PieceMove) {
-        let to_bit = (1 << piece_move.to) as u64;
+        let to_bit = 1u64 << piece_move.to;
         let us = self.side_to_move;
 
         if cfg!(debug_assertions) {
@@ -238,8 +238,8 @@ impl Board {
         let them = self.side_to_move.get_opposite();
 
         if cfg!(debug_assertions) {
-            let from_bit = (1 << piece_move.from) as u64;
-            let to_bit = (1 << piece_move.to) as u64;
+            let from_bit = 1u64 << piece_move.from;
+            let to_bit = 1u64 << piece_move.to;
 
             assert!(self.occupied[us as usize] & from_bit > 0);
             assert!(self.occupied[them as usize] & from_bit == 0);
