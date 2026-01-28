@@ -138,8 +138,6 @@ impl Board {
 
         self.board_state.castle_rights &= CASTLING_RIGHTS_UPDATE[piece_move.from as usize];
         self.board_state.castle_rights &= CASTLING_RIGHTS_UPDATE[piece_move.to as usize];
-
-        self.board_state.captured_piece_type = Some(their_piece);
     }
 
     pub(super) fn handle_en_passant_capture(&mut self, piece_move: &PieceMove) {

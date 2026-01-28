@@ -1,10 +1,12 @@
+use std::mem;
+
 use engine::board::piece_move::PieceMove;
 use crate::allocators::node::INode;
 
-pub(crate) struct ListStackNode {
-    score: usize, 
-    vis: usize,
-    moves: Vec<PieceMove>,
+pub struct ListStackNode {
+    pub(crate) score: i32, 
+    pub(crate) vis: i32,
+    pub(crate) moves: Vec<PieceMove>,
 }
 
 impl ListStackNode {
@@ -19,6 +21,8 @@ impl ListStackNode {
 
 impl INode for ListStackNode {
     fn clear(&mut self) {
+        self.score = 0;
+        self.vis = 0;
         self.moves.clear();                
     }
 
@@ -36,5 +40,13 @@ impl INode for ListStackNode {
 
     fn as_slice_mut(&mut self) -> &mut [PieceMove] {
        &mut self.moves 
+    }
+
+    fn set_moves(&mut self, moves: Vec<PieceMove>) {
+        self.moves = moves;
+    }
+
+    fn take_moves(&mut self) -> Vec<PieceMove> {
+        mem::take(&mut self.moves)
     }
 }

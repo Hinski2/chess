@@ -1,6 +1,6 @@
 use crate::{allocators::{allocator::IAllocator, list_stack_node::ListStackNode, node::INode}, MAX_BRANCH_FACTOR, MAX_DEEP};
 
-struct ListStackAllocator {
+pub struct ListStackAllocator {
     nodes: Vec<ListStackNode>,
 }
 
@@ -26,15 +26,12 @@ impl IAllocator for ListStackAllocator {
         }
     }
 
-    // returns node at the lvl=key with cleared movers
+    /// returns node at the lvl=key
     fn get_node(&mut self, key: Self::Key) -> &mut Self::Node {
         if cfg!(debug_assertions) {
             assert!(key <  self.nodes.len());
         }
 
-        let node = &mut self.nodes[key];
-        node.clear();
-
-        node
+        &mut self.nodes[key]
     }
 }

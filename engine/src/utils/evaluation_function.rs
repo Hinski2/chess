@@ -12,7 +12,7 @@ const ROOK_VALUE: i32 = 5;
 const QUEEN_VALUE: i32 = 9;
 // const KING_VALUE: i32 = 100;
 
-const MATE_VALUE: i32 = 1000;
+pub const MATE_VALUE: i32 = 1000;
 
 pub fn monte_carlo(game: &Game, itr: usize) -> i32 {
     let mut score = 0;

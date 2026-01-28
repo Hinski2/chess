@@ -53,6 +53,20 @@ impl PieceColor {
         }
     }
 
+    pub fn try_extract_piece(&self) -> Option<Piece> {
+        use PieceColor::*;
+
+        match self {
+            WhitePawn | BlackPawn => Some(Piece::Pawn),
+            WhiteKnight | BlackKnight => Some(Piece::Knight),
+            WhiteBishop | BlackBishop => Some(Piece::Bishop),
+            WhiteRook | BlackRook => Some(Piece::Rook), 
+            WhiteQueen | BlackQueen => Some(Piece::Queen),
+            WhiteKing | BlackKing => Some(Piece::King),
+            None => Option::None,
+        }
+    }
+
     pub fn extract_piece(&self) -> Piece {
         use PieceColor::*;
 
@@ -89,16 +103,15 @@ impl Piece {
 }
 
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct BoardState {
     castle_rights: u8,
-    pub(super) captured_piece_type: Option<Piece>,  // if we captured a piece in the last move thats the type of the piece
     pub(super) en_passant: Option<u8>,     // idx where we can attack with en passant
 }
 
 impl BoardState {
     pub fn new() -> Self {
-        BoardState { castle_rights: 0b1111, captured_piece_type: None, en_passant: None }
+        BoardState { castle_rights: 0b1111, en_passant: None }
     }
 
     pub(super) fn castle_rights_white_left(&self) -> bool {

@@ -39,6 +39,8 @@ impl App {
             self.make_move();
             self.display();
         }
+
+        self.game.try_update_game_enum();
     }
 
     fn make_move(&mut self) {
@@ -52,9 +54,6 @@ impl App {
         // make move
         self.game.do_move(&chosen_move);
         self.game.try_update_game_enum(); // we have to handle game end check separately
-
-        // for current implementation
-        thread::sleep(time::Duration::from_millis(25));
     }
 
     fn get_move_from_player(player: &mut PlayerType, game: &Game) -> PieceMove {

@@ -7,6 +7,11 @@ impl Board {
         let us = self.side_to_move;
         let them = self.side_to_move.get_opposite();
 
+        if self.occupied[us as usize] & (1u64 << piece_move.to) == 0 {
+            println!("{:?}", &piece_move); // !!!!1
+            println!("{}", &self);
+        }
+
         if cfg!(debug_assertions) {
             let from_bit = 1u64 << piece_move.from;
             let to_bit = 1u64 << piece_move.to;

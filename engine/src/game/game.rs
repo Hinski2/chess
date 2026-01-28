@@ -7,6 +7,7 @@ pub(crate) struct GameState {
     piece_move: PieceMove,
     board_state: BoardState,
     half_move_clock: usize, // used for 50 move rule
+    pub captured_piece: Option<Piece>,
 }
 
 #[derive(Clone, Debug)]
@@ -37,6 +38,10 @@ impl Game {
                game_enum: GameEnum::InAction,
         }
     } 
+
+    pub fn get_states_stack_size(&self) -> usize {
+        self.states.len()
+    }
 
     pub fn from(game: &Game) -> Game {
         Game {
@@ -76,8 +81,10 @@ impl Game {
         };
 
         // save old state and check for draws
+        let captured_piece = self.board.pieces[piece_move.to as usize].try_extract_piece();
         let (old_board_state, old_hsh) = (self.board.get_board_state(), self.board.get_board_hsh());
-        self.states.push( GameState { piece_move: piece_move.clone(), board_state: old_board_state, half_move_clock: new_half_move_clock});
+
+        self.states.push( GameState { piece_move: piece_move.clone(), board_state: old_board_state, half_move_clock: new_half_move_clock, captured_piece});
         *self.hshs.entry(old_hsh).or_insert(0) += 1;
 
         self.check_for_draws(old_hsh, new_half_move_clock); 
@@ -97,9 +104,14 @@ impl Game {
 
         self.game_enum = GameEnum::InAction; // because we could make the next move
         let piece_move = &self.states.last().unwrap().piece_move; 
-        let board_state = self.states.last().unwrap().board_state;
+        let board_state = &self.states.last().unwrap().board_state;
+        let captured_piece = self.states.last().unwrap().captured_piece;
 
-        self.board.undo_move(&piece_move, board_state);
+        self.board.undo_move(&piece_move, board_state.clone(), captured_piece);
         self.states.pop();
+
+        let hsh = self.board.get_board_hsh();
+        self.hshs.entry(hsh)
+            .and_modify(| e| *e -= 1);
     }
 }

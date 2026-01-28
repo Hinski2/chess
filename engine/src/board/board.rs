@@ -98,7 +98,6 @@ impl Board {
         }
 
         self.hsh ^= self.calculate_castle_hsh();
-        self.board_state.captured_piece_type = None;
         match piece_move.flag {
             MoveFlag::PromoteToQueenAndCapture | MoveFlag::PromoteToRookAndCapture | MoveFlag::PromoteToBishopAndCapture
                 | MoveFlag::PromoteToKnightAndCapture => {
@@ -137,9 +136,7 @@ impl Board {
     }
 
     /// undoes the last move
-    pub fn undo_move(&mut self, piece_move: &PieceMove, board_state: BoardState) {
-        let captured_piece_type = self.board_state.captured_piece_type;
-
+    pub fn undo_move(&mut self, piece_move: &PieceMove, board_state: BoardState, captured_piece_type: Option<Piece>) {
         // switch side
         self.side_to_move = self.side_to_move.get_opposite();
         self.hsh ^= SIDE_TO_MOVE_HSH;
@@ -187,10 +184,6 @@ impl Board {
         if let Some(ep_idx) = self.board_state.en_passant {
             self.hsh ^= EN_PASSANT_HSH[(ep_idx % 8) as usize];
         }
-
-        self.board_state.captured_piece_type = None;
-        // now self.captured_piece_type is invalid but we don't need it. we will update this in this function
-        // TODO so it may be a good idea to move this atribute from Board to Game 
     }
 
     // generates piece (not neccecary valid) moves for a piece
@@ -221,27 +214,36 @@ impl Board {
     }
 
     fn validate_move_filter(&mut self, piece_move: &PieceMove) -> bool {
-        let board_state_copy: BoardState = self.board_state;
-
+        let board_state_copy= self.board_state.clone();
+        let captured_piece_type = self.pieces[piece_move.to as usize].try_extract_piece();
+        
+        // println!("do: {:?}", &piece_move); // !!!!!!1
         self.do_move(&piece_move);
-        // println!("do:{:?}\n{}", &piece_move, self); // !!!!!!!1
+        // println!("{}", self); // !!!!!!!1
 
         let opposite_king= self.bitboard[Piece::King as usize][self.side_to_move.get_opposite() as usize].trailing_zeros() as u8;
         let is_attacked = self.is_tile_attacked(opposite_king);
-        self.undo_move(&piece_move, board_state_copy);
-        // println!("undo:{:?}\n{}", &piece_move, self); // !!!!!!!1
+
+
+        // println!("undo: {:?}", &piece_move); // !!!!!!1
+        self.undo_move(&piece_move, board_state_copy, captured_piece_type);
+        // println!("{}", self); // !!!!!!!1
 
         !is_attacked
     }
-
-    pub fn is_checked(&self) -> bool {
+    
+    
+    pub fn is_checked(&mut self) -> bool {
         let king_idx = self.bitboard[Piece::King as usize][self.side_to_move as usize].trailing_zeros() as u8;
-        self.is_tile_attacked(king_idx)
+
+        self.side_to_move = self.side_to_move.get_opposite();
+        let ans = self.is_tile_attacked(king_idx);
+        self.side_to_move = self.side_to_move.get_opposite();
+        ans
     }
 
+    /// checks if current color can attack piece on tile
     fn is_tile_attacked(&self, idx: u8) -> bool {
-        // checks if current color can attack piece on tile
-
         let x = (idx / 8) as i32;
         let y = (idx % 8) as i32;
 
