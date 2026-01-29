@@ -17,7 +17,7 @@ impl Color {
     }
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum Piece {
     Pawn,
     Knight,
@@ -103,7 +103,7 @@ impl Piece {
 }
 
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BoardState {
     castle_rights: u8,
     pub(super) en_passant: Option<u8>,     // idx where we can attack with en passant

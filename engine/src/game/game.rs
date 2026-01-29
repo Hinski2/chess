@@ -3,6 +3,7 @@ use crate::board::board::Board;
 use crate::board::{BoardState, Piece};
 use crate::board::piece_move::{MoveFlag, PieceMove};
 
+#[derive(Debug)]
 pub(crate) struct GameState {
     piece_move: PieceMove,
     board_state: BoardState,
@@ -38,6 +39,10 @@ impl Game {
                game_enum: GameEnum::InAction,
         }
     } 
+
+    pub fn print_states_stack(&self) {
+        println!("&{:?}", &self.states);
+    }
 
     pub fn get_states_stack_size(&self) -> usize {
         self.states.len()
@@ -88,9 +93,9 @@ impl Game {
         *self.hshs.entry(old_hsh).or_insert(0) += 1;
 
         self.check_for_draws(old_hsh, new_half_move_clock); 
-        if !matches!(self.game_enum, GameEnum::InAction) {
-            return;
-        }
+        // if !matches!(self.game_enum, GameEnum::InAction) {
+            // return;
+        // }
 
         // everything ok
         self.board.do_move(&piece_move);

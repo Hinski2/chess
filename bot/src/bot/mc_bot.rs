@@ -23,14 +23,14 @@ impl IBot for McBot {
         root.set_moves(game.board.generate_all_moves());
 
         let mut best_move = root.moves[0].clone();
-        let mut best_score = if game.board.get_size_to_move() == Color::White { i32::MIN } else { i32::max_value() };
+        let mut best_score = if game.board.get_size_to_move() == Color::White { i32::MIN } else { i32::MAX };
         
+        if cfg!(debug_assertions) {
+            assert!(matches!(game.game_enum, engine::game::game::GameEnum::InAction));
+        }
 
         for mv in &root.moves {
             game.do_move(&mv);
-            if cfg!(debug_assertions) {
-                assert!(matches!(game.game_enum, engine::game::game::GameEnum::InAction));
-            }
 
             let curr_score = monte_carlo(&game, self.no_itr);
             game.undo_move();

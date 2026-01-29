@@ -66,7 +66,7 @@ where
                 best_score = score;
             }
         }
-        
+
         self.memory.get_node(deep).set_moves(moves);
         game.undo_move();
         best_score
