@@ -27,7 +27,7 @@ impl Game {
         false
     }
 
-    // check for draws
+    /// check for draws
     pub(super) fn check_for_draws(&mut self, hsh: u64, new_half_move_clock: usize) {
         if new_half_move_clock >= 100 {
             self.game_enum = GameEnum::TieBy50Rule;
@@ -45,7 +45,7 @@ impl Game {
         }
     }
 
-    // invoke it only if there is no possible moves to make
+    /// invoke it only if there is no possible moves to make
     pub fn check_for_mate_or_stalemate(&mut self) {
         if self.board.is_checked() {
             self.game_enum = match self.board.get_size_to_move() {

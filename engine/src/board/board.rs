@@ -186,7 +186,7 @@ impl Board {
         }
     }
 
-    // generates piece (not neccecary valid) moves for a piece
+    /// generates (not neccecary valid) moves for a piece
     fn generate_piece_move(&mut self, piece_type: &Piece) -> Vec<PieceMove> {
         let positions = self.bitboard[*piece_type as usize][self.side_to_move as usize].clone();
 
