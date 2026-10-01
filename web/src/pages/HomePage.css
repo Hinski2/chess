@@ -1,0 +1,133 @@
+.welcome-main {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  padding: 72px 24px 100px;
+}
+
+.welcome-content {
+  width: min(100%, 760px);
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0 0 18px;
+  color: #b9c29d;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+}
+
+.welcome-content h1 {
+  margin: 0;
+  color: #f4f4f0;
+  font-size: clamp(42px, 7vw, 68px);
+  font-weight: 600;
+  letter-spacing: -3.5px;
+  line-height: 1.05;
+}
+
+.welcome-description {
+  margin: 18px 0 44px;
+  color: #a0a19c;
+  font-size: 16px;
+}
+
+.game-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  text-align: left;
+}
+
+.game-option {
+  position: relative;
+  display: flex;
+  min-height: 164px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 9px;
+  padding: 28px;
+  border: 1px solid rgb(255 255 255 / 13%);
+  border-radius: 12px;
+  background: rgb(255 255 255 / 3%);
+  color: #f4f4f0;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.game-option:hover {
+  transform: translateY(-3px);
+  border-color: rgb(255 255 255 / 35%);
+  background: rgb(255 255 255 / 6%);
+}
+
+.game-option-primary {
+  border-color: #a8b58a;
+  background: #a8b58a;
+  color: #11130e;
+}
+
+.game-option-primary:hover {
+  border-color: #bac69f;
+  background: #bac69f;
+}
+
+.game-option-title {
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.5px;
+}
+
+.game-option-description {
+  color: #a0a19c;
+  font-size: 14px;
+}
+
+.game-option-primary .game-option-description {
+  color: #303528;
+}
+
+.game-option-arrow {
+  position: absolute;
+  top: 25px;
+  right: 26px;
+  font-size: 20px;
+}
+
+.game-option:focus-visible {
+  outline: 2px solid #e2edc6;
+  outline-offset: 4px;
+}
+
+@media (max-width: 560px) {
+  .welcome-main {
+    padding: 56px 20px 72px;
+  }
+
+  .welcome-content h1 {
+    letter-spacing: -2px;
+  }
+
+  .welcome-description {
+    margin-bottom: 32px;
+  }
+
+  .game-options {
+    grid-template-columns: 1fr;
+  }
+
+  .game-option {
+    min-height: 136px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-option {
+    transition: none;
+  }
+}

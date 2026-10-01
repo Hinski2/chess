@@ -1,0 +1,44 @@
+.navbar {
+  display: flex;
+  min-height: 76px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 clamp(24px, 6vw, 88px);
+  border-bottom: 1px solid rgb(255 255 255 / 9%);
+}
+
+.brand {
+  color: #f4f4f0;
+  font-size: 22px;
+  font-weight: 750;
+  letter-spacing: -1.2px;
+  text-decoration: none;
+}
+
+.login-button {
+  padding: 10px 20px;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: 7px;
+  background: transparent;
+  color: #f4f4f0;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.login-button:hover {
+  border-color: rgb(255 255 255 / 50%);
+  background: rgb(255 255 255 / 7%);
+}
+
+.login-button:focus-visible {
+  outline: 2px solid #e2edc6;
+  outline-offset: 4px;
+}
+
+@media (max-width: 560px) {
+  .navbar {
+    min-height: 68px;
+  }
+}
