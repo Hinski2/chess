@@ -13,8 +13,19 @@ pub(crate) const KING_ATTACK: [u64; 64] = [
 	0x0203000000000000, 0x0507000000000000, 0x0a0e000000000000, 0x141c000000000000, 0x2838000000000000, 0x5070000000000000, 0xa0e0000000000000, 0x40c0000000000000, 
 ];
 
+const REQUIRED_EMPTY_FIELDS_FOR_WHITE_LEFT_CASTLE: u64 = (1u64 << 1) | (1u64 << 2) | (1u64 << 3);
+const REQUIRED_EMPTY_FIELDS_FOR_WHITE_RIGHT_CASTLE: u64 = (1u64 << 5) | (1u64 << 6);
+const REQUIRED_EMPTY_FIELDS_FOR_BLACK_LEFT_CASTLE: u64 = (1u64 << 57) | (1u64 << 58) | (1u64 << 59);
+const REQUIRED_EMPTY_FIELDS_FOR_BLACK_RIGHT_CASTLE: u64 =(1u64 << 61) | (1u64 << 62);
 
 impl Board {
+    fn can_castle(&self, required_empty_tiles: u64) -> bool {
+        let occupied_tiles: u64 = self.occupied[Color::White as usize] | self.occupied[Color::Black as usize];
+
+        return self.board_state.castle_rights_white_left()
+            && required_empty_tiles & occupied_tiles == 0
+    }
+
     pub(in crate::board) fn generate_king_moves_white(&self, king_pos: u64) -> Vec<PieceMove> {
         let mut moves = Vec::with_capacity(8);
         let empty: u64 = !(self.occupied[Color::White as usize] | self.occupied[Color::Black as usize]);
@@ -37,6 +48,15 @@ impl Board {
             moves.push(PieceMove { from: idx as u8, to: attack_idx, flag: MoveFlag::Normal });
 
             attacks &= attacks - 1;
+        }
+
+        // castle
+        if self.can_castle(REQUIRED_EMPTY_FIELDS_FOR_WHITE_LEFT_CASTLE) {
+            moves.push(PieceMove { from: 4, to: 2, flag: MoveFlag::Castling });
+        }
+
+        if self.can_castle(REQUIRED_EMPTY_FIELDS_FOR_WHITE_RIGHT_CASTLE) {
+            moves.push(PieceMove { from: 4, to: 6, flag: MoveFlag::Castling });
         }
 
         moves
@@ -65,6 +85,15 @@ impl Board {
             moves.push(PieceMove { from: idx as u8, to: attack_idx, flag: MoveFlag::Normal });
 
             attacks &= attacks - 1;
+        }
+
+        // castle
+        if self.can_castle(REQUIRED_EMPTY_FIELDS_FOR_BLACK_LEFT_CASTLE) {
+            moves.push(PieceMove { from: 60, to: 58, flag: MoveFlag::Castling });
+        }
+
+        if self.can_castle(REQUIRED_EMPTY_FIELDS_FOR_BLACK_RIGHT_CASTLE) {
+            moves.push(PieceMove { from: 60, to: 62, flag: MoveFlag::Castling });
         }
 
         moves

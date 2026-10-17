@@ -1,4 +1,5 @@
 use core::fmt;
+use std::{matches, todo};
 
 use super::BoardState;
 use super::generate_moves::king::KING_ATTACK;
@@ -186,7 +187,7 @@ impl Board {
         }
     }
 
-    /// generates (not neccecary valid) moves for a piece
+    /// generates moves for a piece
     fn generate_piece_move(&mut self, piece_type: &Piece) -> Vec<PieceMove> {
         let positions = self.bitboard[*piece_type as usize][self.side_to_move as usize].clone();
 
@@ -213,25 +214,38 @@ impl Board {
             .collect::<Vec<PieceMove>>()
     }
 
+    fn validate_castling(&mut self, piece_move: &PieceMove) -> bool {
+        self.side_to_move = self.side_to_move.get_opposite();
+
+        let range = if piece_move.from < piece_move.to { piece_move.from..=piece_move.to} else { piece_move.to..=piece_move.from };
+        for i in range {
+            if self.is_tile_attacked(i) {
+                self.side_to_move = self.side_to_move.get_opposite();
+                return false
+            }
+        }
+
+        self.side_to_move = self.side_to_move.get_opposite();
+        return true
+    }
+
     fn validate_move_filter(&mut self, piece_move: &PieceMove) -> bool {
+        if matches!(piece_move.flag, MoveFlag::Castling) {
+            return self.validate_castling(piece_move)
+        }
+
         let board_state_copy= self.board_state.clone();
         let captured_piece_type = self.pieces[piece_move.to as usize].try_extract_piece();
         
-        // println!("do: {:?}", &piece_move); // !!!!!!1
         self.do_move(&piece_move);
-        // println!("{}", self); // !!!!!!!1
 
         let opposite_king= self.bitboard[Piece::King as usize][self.side_to_move.get_opposite() as usize].trailing_zeros() as u8;
         let is_attacked = self.is_tile_attacked(opposite_king);
 
-
-        // println!("undo: {:?}", &piece_move); // !!!!!!1
         self.undo_move(&piece_move, board_state_copy, captured_piece_type);
-        // println!("{}", self); // !!!!!!!1
 
         !is_attacked
     }
-    
     
     pub fn is_checked(&mut self) -> bool {
         let king_idx = self.bitboard[Piece::King as usize][self.side_to_move as usize].trailing_zeros() as u8;
