@@ -7,8 +7,10 @@ edition = "2024"
 members = [ 
     "bot",
     "engine",
+    "referee",
 ]
 
 [dependencies]
 engine = { path = "engine" }
 bot = { path = "bot" }
+referee = { path = "referee"}

@@ -4,8 +4,7 @@
 
 ### how to install 
 
-Just type `cargo run` if you want to use crate with tests or `cargo run --release` for better performance
-
+Just type `cargo run --bin chess` if you want to use crate with tests or `cargo run --release --bin chess` for better performance
 
 ### how to use
 
@@ -39,3 +38,5 @@ you can set here which bot you want to use:
 * min_max: `MinMaxBot::new(allocator, d)` where d is the max depth in MinMax, and the only available allocator for now is ListStackAllocator
 
 
+### how to compute elo 
+Just type `cargo run --bin elo` if you want to use crate with tests or `cargo run --release --bin elo` for better performance

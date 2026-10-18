@@ -127,9 +127,9 @@ fn evaluate_bitboard(mut bitboard: u64, pst: &[i32; 64], is_white: bool) -> i32 
         bitboard &= bitboard - 1;
 
         if is_white {
-            score += pst[sq];
+            score += pst[sq ^ 56];
         } else {
-            score += pst[sq ^ 56]; 
+            score += pst[sq];
         }
     }
 

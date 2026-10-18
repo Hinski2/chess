@@ -19,11 +19,10 @@ const REQUIRED_EMPTY_FIELDS_FOR_BLACK_LEFT_CASTLE: u64 = (1u64 << 57) | (1u64 <<
 const REQUIRED_EMPTY_FIELDS_FOR_BLACK_RIGHT_CASTLE: u64 =(1u64 << 61) | (1u64 << 62);
 
 impl Board {
-    fn can_castle(&self, required_empty_tiles: u64) -> bool {
+    fn can_castle(&self, has_castle_right: bool, required_empty_tiles: u64) -> bool {
         let occupied_tiles: u64 = self.occupied[Color::White as usize] | self.occupied[Color::Black as usize];
 
-        return self.board_state.castle_rights_white_left()
-            && required_empty_tiles & occupied_tiles == 0
+        has_castle_right && required_empty_tiles & occupied_tiles == 0
     }
 
     pub(in crate::board) fn generate_king_moves_white(&self, king_pos: u64) -> Vec<PieceMove> {
@@ -51,11 +50,11 @@ impl Board {
         }
 
         // castle
-        if self.can_castle(REQUIRED_EMPTY_FIELDS_FOR_WHITE_LEFT_CASTLE) {
+        if self.can_castle(self.board_state.castle_rights_white_left(), REQUIRED_EMPTY_FIELDS_FOR_WHITE_LEFT_CASTLE) {
             moves.push(PieceMove { from: 4, to: 2, flag: MoveFlag::Castling });
         }
 
-        if self.can_castle(REQUIRED_EMPTY_FIELDS_FOR_WHITE_RIGHT_CASTLE) {
+        if self.can_castle(self.board_state.castle_rights_white_right(), REQUIRED_EMPTY_FIELDS_FOR_WHITE_RIGHT_CASTLE) {
             moves.push(PieceMove { from: 4, to: 6, flag: MoveFlag::Castling });
         }
 
@@ -88,11 +87,11 @@ impl Board {
         }
 
         // castle
-        if self.can_castle(REQUIRED_EMPTY_FIELDS_FOR_BLACK_LEFT_CASTLE) {
+        if self.can_castle(self.board_state.castle_rights_black_left(), REQUIRED_EMPTY_FIELDS_FOR_BLACK_LEFT_CASTLE) {
             moves.push(PieceMove { from: 60, to: 58, flag: MoveFlag::Castling });
         }
 
-        if self.can_castle(REQUIRED_EMPTY_FIELDS_FOR_BLACK_RIGHT_CASTLE) {
+        if self.can_castle(self.board_state.castle_rights_black_right(), REQUIRED_EMPTY_FIELDS_FOR_BLACK_RIGHT_CASTLE) {
             moves.push(PieceMove { from: 60, to: 62, flag: MoveFlag::Castling });
         }
 

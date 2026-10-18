@@ -356,17 +356,17 @@ impl Board {
         let color = if is_white { "\x1b[97m\x1b[1m" } else { "\x1b[30m\x1b[1m" };
         let piece = 
             if self.bitboard[Piece::Pawn as usize][Color::White as usize] & bit != 0 { '♟' }
-            else if self.bitboard[Piece::Pawn as usize][Color::Black as usize] & bit != 0 { '♙' }
+            else if self.bitboard[Piece::Pawn as usize][Color::Black as usize] & bit != 0 { '♟' }
             else if self.bitboard[Piece::Knight as usize][Color::White as usize] & bit != 0 { '♞' }
-            else if self.bitboard[Piece::Knight as usize][Color::Black as usize] & bit != 0 { '♘' }
+            else if self.bitboard[Piece::Knight as usize][Color::Black as usize] & bit != 0 { '♞' }
             else if self.bitboard[Piece::Bishop as usize][Color::White as usize] & bit != 0 { '♝' }
-            else if self.bitboard[Piece::Bishop as usize][Color::Black as usize] & bit != 0 { '♗' }
+            else if self.bitboard[Piece::Bishop as usize][Color::Black as usize] & bit != 0 { '♝' }
             else if self.bitboard[Piece::Rook as usize][Color::White as usize] & bit != 0 { '♜' }
-            else if self.bitboard[Piece::Rook as usize][Color::Black as usize] & bit != 0 { '♖' }
+            else if self.bitboard[Piece::Rook as usize][Color::Black as usize] & bit != 0 { '♜' }
             else if self.bitboard[Piece::Queen as usize][Color::White as usize] & bit != 0 { '♛' }
-            else if self.bitboard[Piece::Queen as usize][Color::Black as usize] & bit != 0 { '♕' }
+            else if self.bitboard[Piece::Queen as usize][Color::Black as usize] & bit != 0 { '♛' }
             else if self.bitboard[Piece::King as usize][Color::White as usize] & bit != 0 { '♚' }
-            else { '♔' };
+            else { '♚' };
 
         (piece, color)
     }
