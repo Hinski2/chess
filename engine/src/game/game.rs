@@ -1,4 +1,6 @@
 use std::collections::{HashMap};
+use rand::seq::IndexedRandom;
+
 use crate::board::board::Board;
 use crate::board::{BoardState, Piece};
 use crate::board::piece_move::{MoveFlag, PieceMove};
@@ -43,6 +45,28 @@ impl Game {
                game_enum: GameEnum::InAction,
         }
     } 
+
+    pub fn new_with_random_opening(random_moves: usize) -> Game {
+        let board = Board::new();
+        let mut hshs = HashMap::new();
+        hshs.insert(board.get_board_hsh(), 1);
+
+        let mut game = Game { board,
+               states: Vec::new(),
+               hshs,
+               game_enum: GameEnum::InAction,
+        };
+
+        let mut rng = rand::rng();
+        for _ in 0..random_moves {
+            let valid_moves = game.board.generate_all_moves();
+            let random_move = valid_moves.choose(&mut rng).unwrap();
+            game.do_move(random_move);
+            game.try_update_game_enum();
+        }
+
+        game
+    }
 
     pub fn piece_move_to_uci(&self, pm: &PieceMove) -> String {
         let from = Self::square_to_uci(pm.from);

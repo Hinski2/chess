@@ -20,12 +20,13 @@ impl<A: IAllocator, B: IBot> EloEvaluator<A, B> {
         Self {
             bot_config,
             stockfish_handler: StockfishHandler::new().unwrap(),
-            game: Game::new(),
+            game: Game::new_with_random_opening(4),
         }
     } 
 
     pub fn evaluate(&mut self) -> u32 {
         let mut stockfish_elo = STOCKFISH_MIN_ELO;
+        let mut estimates = Vec::new();
         self.stockfish_handler.set_elo(STOCKFISH_MIN_ELO as u32).unwrap();
 
         for block in 0..20 {
@@ -40,16 +41,18 @@ impl<A: IAllocator, B: IBot> EloEvaluator<A, B> {
 
             }
 
-            let est = Self::estimate(stockfish_elo, sum_score / 20.0)
-                .clamp(STOCKFISH_MIN_ELO, STOCKFISH_MAX_ELO);
+            let est = Self::estimate(stockfish_elo, sum_score / 20.0);
+            if block >= 4 {
+                estimates.push(est);
+            }
 
-            stockfish_elo = est;
-            self.stockfish_handler.set_elo(est as u32).unwrap();
+            stockfish_elo = est.clamp(STOCKFISH_MIN_ELO, STOCKFISH_MAX_ELO).round();
+            self.stockfish_handler.set_elo(stockfish_elo as u32).unwrap();
 
             println!("block {block}, elo: {est}")
         }
 
-        stockfish_elo as u32
+        (estimates.iter().sum::<f64>() / estimates.len() as f64) as u32
     }
 
     fn estimate(stockfish_elo: f64, score: f64) -> f64 {

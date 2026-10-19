@@ -4,7 +4,7 @@ use referee::config::BotConfig;
 use referee::elo_evaluator::elo_evaluator::EloEvaluator;
 
 fn main() {
-    let bot = MinMaxBot::new(ListStackAllocator::new(), 2);
+    let bot = MinMaxBot::new(ListStackAllocator::new(), 3);
     let config = BotConfig::new(ListStackAllocator::new(), bot);
 
     let mut evaluator = EloEvaluator::new(config);

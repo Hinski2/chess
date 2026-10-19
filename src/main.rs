@@ -8,7 +8,7 @@ use bot::allocators::list_stack_allocator::ListStackAllocator;
 fn main() {
     // white
     let allocator = ListStackAllocator::new();
-    let white_bot = MinMaxBot::new(allocator, 2);
+    let white_bot = MinMaxBot::new(allocator, 3);
     let white_player = PlayerType::Bot(Box::new(white_bot));
 
     // black
