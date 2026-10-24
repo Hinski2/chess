@@ -1,6 +1,5 @@
 use chess::app::App;
 use chess::PlayerType;
-use bot::bot::random_bot::RandomBot;
 use bot::bot::mc_bot::McBot;
 use bot::bot::min_max::MinMaxBot;
 use bot::allocators::list_stack_allocator::ListStackAllocator;
@@ -12,7 +11,7 @@ fn main() {
     let white_player = PlayerType::Bot(Box::new(white_bot));
 
     // black
-    let allocator = ListStackAllocator::new();
+    let _allocator = ListStackAllocator::new();
     let black_bot = McBot::new(100);
     let black_player = PlayerType::Bot(Box::new(black_bot));
 

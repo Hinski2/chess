@@ -1,5 +1,5 @@
 use core::fmt;
-use std::{matches, todo};
+use std::{matches};
 
 use super::BoardState;
 use super::generate_moves::king::KING_ATTACK;

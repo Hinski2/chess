@@ -1,7 +1,8 @@
 pub(crate) use crate::allocators::allocator::IAllocator;
 use crate::allocators::node::INode;
-use engine::{board::{Color, piece_move::{MoveFlag, PieceMove}}, game::game::{Game, GameEnum}, utils::evaluation_function::MATE_VALUE};
+use engine::{board::{Color, piece_move::{PieceMove}}, game::game::{Game, GameEnum}, utils::evaluation_function::MATE_VALUE};
 use engine::utils::evaluation_function::static_evaluation;
+use super::bot::IBot;
 
 pub struct MinMaxBot<A>
 where 
@@ -73,7 +74,7 @@ where
     }
 }
 
-impl<A> super::bot::IBot for MinMaxBot<A>
+impl<A> IBot for MinMaxBot<A>
 where 
     A: IAllocator<Key = usize>
 {

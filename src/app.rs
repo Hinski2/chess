@@ -1,6 +1,4 @@
-use std::{thread, time};
-
-use engine::{board::{piece_move::PieceMove, Color, Piece}, game::game::Game};
+use engine::{board::{piece_move::PieceMove, Color}, game::game::Game};
 
 use crate::PlayerType;
 

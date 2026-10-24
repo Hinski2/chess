@@ -1,6 +1,4 @@
 use super::stockfish_handler::StockfishHandler;
-use crate::{config::BotConfig};
-use bot::allocators::allocator::IAllocator;
 use bot::bot::bot::IBot;
 use engine::game::game::{Game, GameEnum};
 use std::{matches, println};
@@ -9,16 +7,16 @@ enum GameResult {Win, Draw, Loss} // from our bot perspective
 const STOCKFISH_MIN_ELO: f64 = 1320.0; 
 const STOCKFISH_MAX_ELO: f64 = 3190.0;
 
-pub struct EloEvaluator<A: IAllocator, B: IBot> {
-    bot_config: BotConfig<A, B>,
+pub struct EloEvaluator<B: IBot> {
+    bot: B,
     stockfish_handler: StockfishHandler,
     game: Game,
 }
 
-impl<A: IAllocator, B: IBot> EloEvaluator<A, B> {
-    pub fn new(bot_config: BotConfig<A, B>) -> Self {
+impl<B: IBot> EloEvaluator<B> {
+    pub fn new(bot: B) -> Self {
         Self {
-            bot_config,
+            bot,
             stockfish_handler: StockfishHandler::new().unwrap(),
             game: Game::new_with_random_opening(4),
         }
@@ -69,7 +67,7 @@ impl<A: IAllocator, B: IBot> EloEvaluator<A, B> {
 
         while matches!(self.game.game_enum, GameEnum::InAction) {
             let piece_move = if bot_turn {
-                self.bot_config.bot.get_best_move(&self.game)
+                self.bot.get_best_move(&self.game)
             } else {
                 let uci = self.stockfish_handler.get_move(&uci_moves).unwrap();
                 self.game.uci_to_piece_move(&uci)

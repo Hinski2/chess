@@ -8,9 +8,11 @@ members = [
     "bot",
     "engine",
     "referee",
+    "eval",
 ]
 
 [dependencies]
 engine = { path = "engine" }
 bot = { path = "bot" }
 referee = { path = "referee"}
+eval = { path = "eval"}
