@@ -1,21 +1,22 @@
-use engine::{board::{piece_move::PieceMove, Color}, game::game::Game, utils::evaluation_function::monte_carlo};
+use engine::{board::{piece_move::PieceMove, Color}, game::game::Game};
+use eval::evaluator::IEvaluator;
 use crate::{allocators::{allocator::IAllocator, list_stack_allocator::ListStackAllocator, node::INode}, bot::bot::IBot};
 
-pub struct McBot {
+pub struct McBot<E: IEvaluator> {
+    eval: E,
     memory: ListStackAllocator,
-    no_itr: usize,
 }
 
-impl McBot {
-    pub fn new(no_itr: usize) -> Self {
+impl<E: IEvaluator> McBot<E> {
+    pub fn new(eval: E) -> Self {
         Self {
+            eval: eval,
             memory: ListStackAllocator::new(),
-            no_itr: no_itr,
         }
     }
 }
 
-impl IBot for McBot {
+impl<E: IEvaluator> IBot for McBot<E> {
     fn get_best_move(&mut self, game: &Game) -> PieceMove {
         let mut game = Game::from(game);
         let root = self.memory.get_node(0);
@@ -32,7 +33,7 @@ impl IBot for McBot {
         for mv in &root.moves {
             game.do_move(&mv);
 
-            let curr_score = monte_carlo(&game, self.no_itr);
+            let curr_score = self.eval.evaluate(&game);
             game.undo_move();
 
             if curr_score > best_score && game.board.get_size_to_move() == Color::White {

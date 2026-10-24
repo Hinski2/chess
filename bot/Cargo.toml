@@ -5,4 +5,5 @@ edition = "2024"
 
 [dependencies]
 engine = { path = "../engine" }
+eval = {path = "../eval"}
 rand = "0.9.2"

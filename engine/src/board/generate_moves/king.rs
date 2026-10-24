@@ -1,3 +1,5 @@
+use crate::board::generate_moves::king;
+
 use super::super::board::Board;
 use super::super::piece_move::{PieceMove, MoveFlag};
 use super::super::Color;
@@ -27,6 +29,17 @@ impl Board {
 
     pub(in crate::board) fn generate_king_moves_white(&self, king_pos: u64) -> Vec<PieceMove> {
         let mut moves = Vec::with_capacity(8);
+        self.generate_king_moves_white_into(king_pos, &mut moves);
+        moves
+    }
+
+    pub(in crate::board) fn generate_king_moves_black(&self, king_pos: u64) -> Vec<PieceMove> {
+        let mut moves = Vec::with_capacity(8);
+        self.generate_king_moves_black_into(king_pos, &mut moves);
+        moves
+    }
+
+    pub(in crate::board) fn generate_king_moves_white_into(&self, king_pos: u64, out: &mut Vec<PieceMove>) {
         let empty: u64 = !(self.occupied[Color::White as usize] | self.occupied[Color::Black as usize]);
         let enemy: u64 = self.occupied[Color::Black as usize];
         let idx = king_pos.trailing_zeros() as usize;
@@ -35,7 +48,7 @@ impl Board {
         let mut attacks = KING_ATTACK[idx] & enemy;
         while attacks != 0 {
             let attack_idx = attacks.trailing_zeros() as u8;
-            moves.push(PieceMove { from: idx as u8, to: attack_idx, flag: MoveFlag::Capture });
+            out.push(PieceMove { from: idx as u8, to: attack_idx, flag: MoveFlag::Capture });
 
             attacks &= attacks - 1;
         }
@@ -44,26 +57,23 @@ impl Board {
         let mut attacks = KING_ATTACK[idx] & empty;
         while attacks != 0 {
             let attack_idx = attacks.trailing_zeros() as u8;
-            moves.push(PieceMove { from: idx as u8, to: attack_idx, flag: MoveFlag::Normal });
+            out.push(PieceMove { from: idx as u8, to: attack_idx, flag: MoveFlag::Normal });
 
             attacks &= attacks - 1;
         }
 
         // castle
         if self.can_castle(self.board_state.castle_rights_white_left(), REQUIRED_EMPTY_FIELDS_FOR_WHITE_LEFT_CASTLE) {
-            moves.push(PieceMove { from: 4, to: 2, flag: MoveFlag::Castling });
+            out.push(PieceMove { from: 4, to: 2, flag: MoveFlag::Castling });
         }
 
         if self.can_castle(self.board_state.castle_rights_white_right(), REQUIRED_EMPTY_FIELDS_FOR_WHITE_RIGHT_CASTLE) {
-            moves.push(PieceMove { from: 4, to: 6, flag: MoveFlag::Castling });
+            out.push(PieceMove { from: 4, to: 6, flag: MoveFlag::Castling });
         }
-
-        moves
     }
 
 
-    pub(in crate::board) fn generate_king_moves_black(&self, king_pos: u64) -> Vec<PieceMove> {
-        let mut moves = Vec::with_capacity(8);
+    pub(in crate::board) fn generate_king_moves_black_into(&self, king_pos: u64, out: &mut Vec<PieceMove>) {
         let empty: u64 = !(self.occupied[Color::White as usize] | self.occupied[Color::Black as usize]);
         let enemy: u64 = self.occupied[Color::White as usize];
         let idx = king_pos.trailing_zeros() as usize;
@@ -72,7 +82,7 @@ impl Board {
         let mut attacks = KING_ATTACK[idx] & enemy;
         while attacks != 0 {
             let attack_idx = attacks.trailing_zeros() as u8;
-            moves.push(PieceMove { from: idx as u8, to: attack_idx, flag: MoveFlag::Capture });
+            out.push(PieceMove { from: idx as u8, to: attack_idx, flag: MoveFlag::Capture });
 
             attacks &= attacks - 1;
         }
@@ -81,21 +91,19 @@ impl Board {
         let mut attacks = KING_ATTACK[idx] & empty;
         while attacks != 0 {
             let attack_idx = attacks.trailing_zeros() as u8;
-            moves.push(PieceMove { from: idx as u8, to: attack_idx, flag: MoveFlag::Normal });
+            out.push(PieceMove { from: idx as u8, to: attack_idx, flag: MoveFlag::Normal });
 
             attacks &= attacks - 1;
         }
 
         // castle
         if self.can_castle(self.board_state.castle_rights_black_left(), REQUIRED_EMPTY_FIELDS_FOR_BLACK_LEFT_CASTLE) {
-            moves.push(PieceMove { from: 60, to: 58, flag: MoveFlag::Castling });
+            out.push(PieceMove { from: 60, to: 58, flag: MoveFlag::Castling });
         }
 
         if self.can_castle(self.board_state.castle_rights_black_right(), REQUIRED_EMPTY_FIELDS_FOR_BLACK_RIGHT_CASTLE) {
-            moves.push(PieceMove { from: 60, to: 62, flag: MoveFlag::Castling });
+            out.push(PieceMove { from: 60, to: 62, flag: MoveFlag::Castling });
         }
-
-        moves
     }
 }
 

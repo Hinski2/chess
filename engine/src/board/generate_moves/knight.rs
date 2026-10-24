@@ -14,8 +14,19 @@ pub(crate) const KNIGHT_ATTACK: [u64; 64] = [  // see /notebooks/generate_moves.
 ];
 
 impl Board {
-    pub(in crate::board) fn generate_knight_moves_white(&self, mut knight_pos: u64) -> Vec<PieceMove> {
+    pub(in crate::board) fn generate_knight_moves_white(&self, knight_pos: u64) -> Vec<PieceMove> {
         let mut moves = Vec::with_capacity(16);
+        self.generate_knight_moves_white_into(knight_pos, &mut moves);
+        moves
+    }
+
+    pub(in crate::board) fn generate_knight_moves_black(&self, knight_pos: u64) -> Vec<PieceMove> {
+        let mut moves = Vec::with_capacity(16);
+        self.generate_knight_moves_black_into(knight_pos, &mut moves);
+        moves
+    }
+
+    pub(in crate::board) fn generate_knight_moves_white_into(&self, mut knight_pos: u64, out: &mut Vec<PieceMove>) {
         let empty: u64 = !(self.occupied[Color::White as usize] | self.occupied[Color::Black as usize]);
         let enemy: u64 = self.occupied[Color::Black as usize];
 
@@ -27,7 +38,7 @@ impl Board {
             
             while attacks != 0 {
                 let attack_idx = attacks.trailing_zeros() as u8;
-                moves.push(PieceMove { from: idx, to: attack_idx, flag: MoveFlag::Capture });
+                out.push(PieceMove { from: idx, to: attack_idx, flag: MoveFlag::Capture });
                 
                 attacks &= attacks - 1;
             }
@@ -37,19 +48,16 @@ impl Board {
             
             while attacks != 0 {
                 let attack_idx = attacks.trailing_zeros() as u8;
-                moves.push(PieceMove { from: idx, to: attack_idx, flag: MoveFlag::Normal });
+                out.push(PieceMove { from: idx, to: attack_idx, flag: MoveFlag::Normal });
 
                 attacks &= attacks - 1;
             }
 
             knight_pos &= knight_pos - 1;
         }
-        
-        return moves;
     }
 
-    pub(in crate::board) fn generate_knight_moves_black(&self, mut knight_pos: u64) -> Vec<PieceMove> {
-        let mut moves = Vec::with_capacity(16);
+    pub(in crate::board) fn generate_knight_moves_black_into(&self, mut knight_pos: u64, out: &mut Vec<PieceMove>) {
         let empty: u64 = !(self.occupied[Color::White as usize] | self.occupied[Color::Black as usize]);
         let enemy: u64 = self.occupied[Color::White as usize];
 
@@ -61,7 +69,7 @@ impl Board {
             
             while attacks != 0 {
                 let attack_idx = attacks.trailing_zeros() as u8;
-                moves.push(PieceMove { from: idx, to: attack_idx, flag: MoveFlag::Capture });
+                out.push(PieceMove { from: idx, to: attack_idx, flag: MoveFlag::Capture });
 
                 attacks &= attacks - 1;
             }
@@ -71,15 +79,13 @@ impl Board {
             
             while attacks != 0 {
                 let attack_idx = attacks.trailing_zeros() as u8;
-                moves.push(PieceMove { from: idx, to: attack_idx, flag: MoveFlag::Normal });
+                out.push(PieceMove { from: idx, to: attack_idx, flag: MoveFlag::Normal });
 
                 attacks &= attacks - 1;
             }
 
             knight_pos &= knight_pos - 1;
         }
-        
-        return moves;
     }
 }
 

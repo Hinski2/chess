@@ -4,9 +4,20 @@ use super::super::Color;
 
 impl Board {
     pub(in crate::board) fn generate_pawn_moves_white(&self, pawn_pos: u64) -> Vec<PieceMove> {
+        let mut out = Vec::with_capacity(16);
+        self.generate_pawn_moves_white_into(pawn_pos, &mut out);
+        out
+    }
+
+    pub(in crate::board) fn generate_pawn_moves_black(&self, pawn_pos: u64) -> Vec<PieceMove> {
+        let mut out = Vec::with_capacity(16);
+        self.generate_pawn_moves_black_into(pawn_pos, &mut out);
+        out
+    }
+
+    pub(in crate::board) fn generate_pawn_moves_white_into(&self, pawn_pos: u64, out: &mut Vec<PieceMove>) {
         // setup
         let empty_tiles = !(self.occupied[Color::White as usize] | self.occupied[Color::Black as usize]);
-        let mut moves = Vec::with_capacity(16);
         let ep_mask = match self.board_state.en_passant {
             Some(idx) => 1u64 << idx,
             None => 0,
@@ -19,12 +30,12 @@ impl Board {
             let from = to - 8;
 
             if to >= 56 {
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToBishop });
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToKnight });
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToQueen });
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToRook });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToBishop });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToKnight });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToQueen });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToRook });
             } else {
-                moves.push(PieceMove { from, to, flag: MoveFlag::Normal });
+                out.push(PieceMove { from, to, flag: MoveFlag::Normal });
             }
 
             single_push &= single_push - 1; // pop lsb
@@ -37,7 +48,7 @@ impl Board {
             let to = double_push.trailing_zeros() as u8;
             let from = to - 16;
 
-            moves.push(PieceMove { from, to, flag: MoveFlag::DoublePawnPush });
+            out.push(PieceMove { from, to, flag: MoveFlag::DoublePawnPush });
             double_push &= double_push - 1; // pop lsb
         }
 
@@ -49,14 +60,14 @@ impl Board {
             let from = to - 7;
 
             if to >= 56 {
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToBishopAndCapture });
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToKnightAndCapture });
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToQueenAndCapture });
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToRookAndCapture });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToBishopAndCapture });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToKnightAndCapture });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToQueenAndCapture });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToRookAndCapture });
             } else if to == self.board_state.en_passant.unwrap_or(0) {
-                moves.push(PieceMove { from, to, flag: MoveFlag::EnPassantCapture }); 
+                out.push(PieceMove { from, to, flag: MoveFlag::EnPassantCapture }); 
             } else {
-                moves.push(PieceMove { from, to, flag: MoveFlag::Capture });
+                out.push(PieceMove { from, to, flag: MoveFlag::Capture });
             }
 
             left_attact &= left_attact - 1; // pop lsb
@@ -70,26 +81,23 @@ impl Board {
             let from = to - 9;
 
             if to >= 56 {
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToBishopAndCapture });
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToKnightAndCapture });
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToQueenAndCapture });
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToRookAndCapture });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToBishopAndCapture });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToKnightAndCapture });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToQueenAndCapture });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToRookAndCapture });
             } else if to == self.board_state.en_passant.unwrap_or(0) {
-                moves.push(PieceMove { from, to, flag: MoveFlag::EnPassantCapture }); 
+                out.push(PieceMove { from, to, flag: MoveFlag::EnPassantCapture }); 
             } else {
-                moves.push(PieceMove { from, to, flag: MoveFlag::Capture });
+                out.push(PieceMove { from, to, flag: MoveFlag::Capture });
             }
 
             right_attack &= right_attack - 1; // pop lsb
         }
-
-        return moves;
     }
 
-    pub(in crate::board) fn generate_pawn_moves_black(&self, pawn_pos: u64) -> Vec<PieceMove> {
+    pub(in crate::board) fn generate_pawn_moves_black_into(&self, pawn_pos: u64, out: &mut Vec<PieceMove>) {
         // setup
         let empty_tiles = !(self.occupied[Color::White as usize] | self.occupied[Color::Black as usize]);
-        let mut moves = Vec::with_capacity(16);
         let ep_mask = match self.board_state.en_passant {
             Some(idx) => 1u64 << idx,
             None => 0,
@@ -102,12 +110,12 @@ impl Board {
             let from = to + 8;
 
             if to < 8 {
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToBishop });
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToKnight });
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToQueen });
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToRook });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToBishop });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToKnight });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToQueen });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToRook });
             } else {
-                moves.push(PieceMove { from, to, flag: MoveFlag::Normal });
+                out.push(PieceMove { from, to, flag: MoveFlag::Normal });
             }
 
             single_push &= single_push - 1; // pop lsb
@@ -120,7 +128,7 @@ impl Board {
             let to = double_push.trailing_zeros() as u8;
             let from = to + 16;
 
-            moves.push(PieceMove { from, to, flag: MoveFlag::DoublePawnPush });
+            out.push(PieceMove { from, to, flag: MoveFlag::DoublePawnPush });
             double_push &= double_push - 1; // pop lsb
         }
 
@@ -132,14 +140,14 @@ impl Board {
             let from = to + 9;
 
             if to < 8 {
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToBishopAndCapture });
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToKnightAndCapture });
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToQueenAndCapture });
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToRookAndCapture });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToBishopAndCapture });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToKnightAndCapture });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToQueenAndCapture });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToRookAndCapture });
             } else if to == self.board_state.en_passant.unwrap_or(0) {
-                moves.push(PieceMove { from, to, flag: MoveFlag::EnPassantCapture }); 
+                out.push(PieceMove { from, to, flag: MoveFlag::EnPassantCapture }); 
             } else {
-                moves.push(PieceMove { from, to, flag: MoveFlag::Capture });
+                out.push(PieceMove { from, to, flag: MoveFlag::Capture });
             }
 
             left_attact &= left_attact - 1; // pop lsb
@@ -153,20 +161,18 @@ impl Board {
             let from = to + 7;
 
             if to < 8 {
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToBishopAndCapture });
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToKnightAndCapture });
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToQueenAndCapture });
-                moves.push(PieceMove { from, to, flag: MoveFlag::PromoteToRookAndCapture });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToBishopAndCapture });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToKnightAndCapture });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToQueenAndCapture });
+                out.push(PieceMove { from, to, flag: MoveFlag::PromoteToRookAndCapture });
             } else if to == self.board_state.en_passant.unwrap_or(0) {
-                moves.push(PieceMove { from, to, flag: MoveFlag::EnPassantCapture }); 
+                out.push(PieceMove { from, to, flag: MoveFlag::EnPassantCapture }); 
             } else {
-                moves.push(PieceMove { from, to, flag: MoveFlag::Capture });
+                out.push(PieceMove { from, to, flag: MoveFlag::Capture });
             }
 
             right_attack &= right_attack - 1; // pop lsb
         }
-
-        return moves;
     }
 
 }

@@ -91,6 +91,14 @@ impl Board {
             .collect()
     }    
 
+    pub fn generate_all_moves_into(&mut self, out: &mut Vec<PieceMove>) {
+        for piece in Piece::ALL {
+            self.generate_piece_move_into(&piece, out);
+        }
+
+        out.retain(|piece_move| self.validate_move_filter(piece_move));
+    }
+
     /// execute move, update board state and swiches sides
     pub fn do_move(&mut self, piece_move: &PieceMove) {
         if let Some(ep_idx) = self.board_state.en_passant {
@@ -210,8 +218,33 @@ impl Board {
             (Piece::King, Color::White) => self.generate_king_moves_white(positions),
             (Piece::King, Color::Black) => self.generate_king_moves_black(positions),
         }.into_iter()
-            .filter(|piece_move| self.validate_move_filter(piece_move))
+            .filter(|piece_move: &PieceMove| self.validate_move_filter(piece_move))
             .collect::<Vec<PieceMove>>()
+    }
+
+    /// generates NOT NECESSARILY VALID moves for a piece into an existing vector
+    fn generate_piece_move_into(&mut self, piece_type: &Piece, out: &mut Vec<PieceMove>) {
+        let positions = self.bitboard[*piece_type as usize][self.side_to_move as usize].clone();
+
+        match (piece_type, self.side_to_move) {
+            (Piece::Pawn, Color::White) => self.generate_pawn_moves_white_into(positions, out),
+            (Piece::Pawn, Color::Black) => self.generate_pawn_moves_black_into(positions, out),
+
+            (Piece::Knight, Color::White) => self.generate_knight_moves_white_into(positions, out),
+            (Piece::Knight, Color::Black) => self.generate_knight_moves_black_into(positions, out),
+
+            (Piece::Bishop, Color::White) => self.generate_bishop_moves_white_into(positions, out),
+            (Piece::Bishop, Color::Black) => self.generate_bishop_moves_black_into(positions, out),
+
+            (Piece::Rook, Color::White) => self.generate_rook_moves_white_into(positions, out),
+            (Piece::Rook, Color::Black) => self.generate_rook_moves_black_into(positions, out),
+
+            (Piece::Queen, Color::White) => self.generate_queen_moves_white_into(positions, out),
+            (Piece::Queen, Color::Black) => self.generate_queen_moves_black_into(positions, out),
+
+            (Piece::King, Color::White) => self.generate_king_moves_white_into(positions, out),
+            (Piece::King, Color::Black) => self.generate_king_moves_black_into(positions, out),
+        }
     }
 
     fn validate_castling(&mut self, piece_move: &PieceMove) -> bool {

@@ -3,8 +3,19 @@ use super::super::piece_move::{PieceMove, MoveFlag};
 use super::super::Color;
 
 impl Board {
-    pub(crate) fn generate_bishop_moves_white(&self, mut bishop_pos: u64) -> Vec<PieceMove> {
+    pub(crate) fn generate_bishop_moves_white(&self, bishop_pos: u64) -> Vec<PieceMove> {
         let mut moves = Vec::with_capacity(16);
+        self.generate_bishop_moves_white_into(bishop_pos, &mut moves);
+        moves
+    }
+
+    pub(crate) fn generate_bishop_moves_black(&self, bishop_pos: u64) -> Vec<PieceMove> {
+        let mut moves = Vec::with_capacity(16);
+        self.generate_bishop_moves_black_into(bishop_pos, &mut moves);
+        moves
+    }
+
+    pub(crate) fn generate_bishop_moves_white_into(&self, mut bishop_pos: u64, out: &mut Vec<PieceMove>) {
         let empty = !(self.occupied[Color::White as usize] | self.occupied[Color::Black as usize]);
         let enemy = self.occupied[Color::Black as usize];
 
@@ -22,9 +33,9 @@ impl Board {
                     let to = (_pos.0 * 8 + _pos.1) as u8;
 
                     if (1u64 << to) & empty > 0 {
-                        moves.push(PieceMove { from, to, flag: MoveFlag::Normal });
+                        out.push(PieceMove { from, to, flag: MoveFlag::Normal });
                     } else if (1u64 << to) & enemy > 0 {
-                        moves.push(PieceMove { from, to, flag: MoveFlag::Capture });
+                        out.push(PieceMove { from, to, flag: MoveFlag::Capture });
                         break;
                     } else {
                         break;
@@ -37,12 +48,9 @@ impl Board {
 
             bishop_pos &= bishop_pos - 1;
         }
-
-        moves
     }
 
-    pub(crate) fn generate_bishop_moves_black(&self, mut bishop_pos: u64) -> Vec<PieceMove> {
-        let mut moves = Vec::with_capacity(16);
+    pub(crate) fn generate_bishop_moves_black_into(&self, mut bishop_pos: u64, out: &mut Vec<PieceMove>) {
         let empty = !(self.occupied[Color::White as usize] | self.occupied[Color::Black as usize]);
         let enemy = self.occupied[Color::White as usize];
 
@@ -60,9 +68,9 @@ impl Board {
                     let to = (_pos.0 * 8 + _pos.1) as u8;
 
                     if (1u64 << to) & empty > 0 {
-                        moves.push(PieceMove { from, to, flag: MoveFlag::Normal });
+                        out.push(PieceMove { from, to, flag: MoveFlag::Normal });
                     } else if (1u64 << to) & enemy > 0 {
-                        moves.push(PieceMove { from, to, flag: MoveFlag::Capture });
+                        out.push(PieceMove { from, to, flag: MoveFlag::Capture });
                         break;
                     } else {
                         break;
@@ -75,8 +83,6 @@ impl Board {
 
             bishop_pos &= bishop_pos - 1;
         }
-
-        moves
     }
 
 }

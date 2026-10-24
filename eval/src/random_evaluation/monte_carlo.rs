@@ -1,13 +1,27 @@
 use engine::game::game::Game;
+use crate::evaluator::IEvaluator;
+
 use super::utils::random_walk;
 
-pub fn monte_carlo(game: &Game, itr: usize) -> i32 {
-    let mut score = 0;
+pub struct MonteCarloEvaluator {
+    itr: usize,
+}
 
-    for _ in 0..itr {
-        let mut game_simulation = Game::from(game);
-        score += random_walk(&mut game_simulation);
+impl MonteCarloEvaluator {
+    pub fn new(itr: usize) -> Self {
+        Self { itr }
     }
+}
 
-    score
+impl IEvaluator for MonteCarloEvaluator {
+    fn evaluate(&self, game: &Game) -> i32 {
+        let mut score = 0;
+
+        for _ in 0..self.itr {
+            let mut game_simulation = Game::from(game);
+            score += random_walk(&mut game_simulation);
+        }
+
+        score
+    }
 }
