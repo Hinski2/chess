@@ -1,50 +1,50 @@
 use engine::{board::{piece_move::PieceMove, Color}, game::game::Game};
 use eval::evaluator::IEvaluator;
-use crate::{allocators::{allocator::IAllocator, list_stack_allocator::ListStackAllocator, node::INode}, bot::bot::IBot};
+use crate::{allocators::allocator::IAllocator, bot::bot::IBot, move_order::move_order::IMoveOrder, node::{node::INode, node_min_max::NodeMinMax}};
 
-pub struct McBot<E: IEvaluator> {
+pub struct McBot<E: IEvaluator, A: IAllocator<NodeMinMax>, O: IMoveOrder> {
     eval: E,
-    memory: ListStackAllocator,
+    memory: A,
+    move_order: O,
 }
 
-impl<E: IEvaluator> McBot<E> {
-    pub fn new(eval: E) -> Self {
+impl<E: IEvaluator, A: IAllocator<NodeMinMax>, O: IMoveOrder> McBot<E, A, O> {
+    pub fn new(eval: E, memory: A, move_order: O) -> Self {
         Self {
-            eval: eval,
-            memory: ListStackAllocator::new(),
+            eval, 
+            memory, 
+            move_order,
         }
     }
 }
 
-impl<E: IEvaluator> IBot for McBot<E> {
+impl<E: IEvaluator, A: IAllocator<NodeMinMax>, O: IMoveOrder> IBot for McBot<E, A, O> {
     fn get_best_move(&mut self, game: &Game) -> PieceMove {
         let mut game = Game::from(game);
-        let root = self.memory.get_node(0);
-        root.clear();
-        root.set_moves(game.board.generate_all_moves());
+        assert!(matches!(game.game_enum, engine::game::game::GameEnum::InAction));
 
-        let mut best_move = root.moves[0].clone();
-        let mut best_score = if game.board.get_size_to_move() == Color::White { i32::MIN } else { i32::MAX };
-        
-        if cfg!(debug_assertions) {
-            assert!(matches!(game.game_enum, engine::game::game::GameEnum::InAction));
-        }
+        self.memory.new_search();
+        self.move_order.new_search();
 
-        for mv in &root.moves {
-            game.do_move(&mv);
+        let root = self.memory.get_root_id(&game);
+        let no_moves = self.memory.get_node(root).get_move_list().prepare_moves(&mut self.move_order, &mut game, 0);
+        assert!(no_moves > 0);
 
-            let curr_score = self.eval.evaluate(&game);
+        let maximizing = game.board.get_size_to_move() == Color::White;
+        let mut best_move_idx = 0;
+        let mut best_score = if maximizing { i32::MIN } else { i32::MAX };
+
+        for i in 0..no_moves {
+            game.do_move(self.memory.get_node(root).get_move_list().get_ith_move(i));
+            let score = self.eval.evaluate(&game);
             game.undo_move();
 
-            if curr_score > best_score && game.board.get_size_to_move() == Color::White {
-                best_score = curr_score;
-                best_move = mv.clone();
-            } else if curr_score < best_score && game.board.get_size_to_move() == Color::Black {
-                best_score = curr_score;
-                best_move = mv.clone();
+            if (maximizing && score > best_score) || (!maximizing && score < best_score) {
+                best_score = score;
+                best_move_idx = i;
             }
         }
-    
-        best_move
+
+        self.memory.get_node(root).get_move_list().get_ith_move(best_move_idx).clone()
     }
 }

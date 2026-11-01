@@ -1,4 +1,5 @@
 use bot::bot::bot::IBot;
+use bot::move_order::no_order::NoOrder;
 use chess::app::App;
 use chess::PlayerType;
 use bot::bot::mc_bot::McBot;
@@ -11,12 +12,15 @@ fn main() {
     // white
     let allocator = ListStackAllocator::new();
     let eval = StaticEvaluator;
-    let white_bot: Box<dyn IBot> = Box::new(MinMaxBot::new(allocator, eval, 3));
+    let move_order = NoOrder::new();
+    let white_bot: Box<dyn IBot> = Box::new(MinMaxBot::new(eval,  allocator, move_order, 3));
     let white_player = PlayerType::Bot(white_bot);
 
     // black
-    let eval = MonteCarloEvaluator::new(100);
-    let black_bot: Box<dyn IBot> = Box::new(McBot::new(eval));
+    let eval = MonteCarloEvaluator::new(10);
+    let allocator = ListStackAllocator::new();
+    let move_order = NoOrder::new();
+    let black_bot: Box<dyn IBot> = Box::new(McBot::new(eval, allocator, move_order));
     let black_player = PlayerType::Bot(black_bot);
 
     // run the game

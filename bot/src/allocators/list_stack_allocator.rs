@@ -1,37 +1,42 @@
-use crate::{allocators::{allocator::IAllocator, list_stack_node::ListStackNode, node::INode}, MAX_BRANCH_FACTOR, MAX_DEEP};
+use std::debug_assert;
 
-pub struct ListStackAllocator {
-    nodes: Vec<ListStackNode>,
+use engine::game::game::Game;
+
+use crate::{allocators::allocator::IAllocator, node::node::INode};
+
+pub struct ListStackAllocator<N: INode> {
+    nodes: Vec<N>,
 }
 
-impl ListStackAllocator {
+impl<N: INode> ListStackAllocator<N> {
     pub fn new() -> Self {
-        let mut nodes = Vec::with_capacity(MAX_DEEP);
+        Self { nodes: Vec::new() }
+    }
 
-        for _ in 0..MAX_DEEP {
-            nodes.push(ListStackNode::new(MAX_BRANCH_FACTOR));
+    fn fresh(&mut self, deep: usize) -> usize {
+        if deep >= self.nodes.len() {
+            self.nodes.resize_with(deep + 1, N::default);
         }
 
-        Self { nodes }
+        self.nodes[deep].reset();
+        deep
     }
 }
 
-impl IAllocator for ListStackAllocator {
-    type Node = ListStackNode;
-    type Key = usize;   // lvl
+impl<N: INode> IAllocator<N> for ListStackAllocator<N> {
+    type NodeId = usize;
 
-    fn clean(&mut self) {
-        for node in &mut self.nodes {
-            node.clear();
-        }
+    fn get_root_id(&mut self, _game: &Game) -> Self::NodeId {
+        self.fresh(0)
     }
 
-    /// returns node at the lvl=key
-    fn get_node(&mut self, key: Self::Key) -> &mut Self::Node {
-        if cfg!(debug_assertions) {
-            assert!(key <  self.nodes.len());
-        }
+    /// invoke only afler make a move
+    fn get_ith_child_id(&mut self, parent_id: Self::NodeId, _i: usize, _game: &Game) -> Self::NodeId {
+        self.fresh(parent_id + 1)
+    }
 
-        &mut self.nodes[key]
+    fn get_node(&mut self, id: Self::NodeId) -> &mut N {
+        debug_assert!(id < self.nodes.len());
+        &mut self.nodes[id]
     }
 }

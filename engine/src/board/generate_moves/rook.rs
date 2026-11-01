@@ -11,7 +11,7 @@ impl Board {
 
     pub(in crate::board) fn generate_rook_moves_black(&self, rook_pos: u64) -> Vec<PieceMove> {
         let mut moves = Vec::with_capacity(16);
-        self.generate_rook_moves_white_into(rook_pos, &mut moves);
+        self.generate_rook_moves_black_into(rook_pos, &mut moves);
         moves
     }
 

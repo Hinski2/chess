@@ -1,9 +1,11 @@
-use crate::allocators::node::INode;
+use engine::game::game::Game;
+use crate::node::node::INode;
 
-pub trait IAllocator {
-    type Node: INode;
-    type Key: Copy;
-    
-    fn clean(&mut self);
-    fn get_node(&mut self, key: Self::Key) -> &mut Self::Node;
+pub trait IAllocator<N: INode> {
+    type NodeId: Copy;
+
+    fn get_root_id(&mut self, game: &Game) -> Self::NodeId;
+    fn get_ith_child_id(&mut self, parent_id: Self::NodeId, i: usize, game: &Game) -> Self::NodeId;
+    fn get_node(&mut self, id: Self::NodeId) -> &mut N;
+    fn new_search(&mut self) {}
 }

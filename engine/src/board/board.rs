@@ -92,6 +92,8 @@ impl Board {
     }    
 
     pub fn generate_all_moves_into(&mut self, out: &mut Vec<PieceMove>) {
+        out.clear();
+
         for piece in Piece::ALL {
             self.generate_piece_move_into(&piece, out);
         }
@@ -420,7 +422,7 @@ impl fmt::Display for Board {
                 let bg_color = if is_light_square { "\x1b[48;5;209m" } else { "\x1b[48;5;94m" };
                 let (symbol, fg_color) = self.get_piece_char_and_color(square_idx);
                 
-                output.push_str(&format!("{}{}{} \x1b[0m", bg_color, fg_color, symbol));
+                output.push_str(&format!("{}{} {} \x1b[0m", bg_color, fg_color, symbol));
             }
             output.push_str("|\n");
         }

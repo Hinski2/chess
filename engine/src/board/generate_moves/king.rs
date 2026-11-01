@@ -1,5 +1,3 @@
-use crate::board::generate_moves::king;
-
 use super::super::board::Board;
 use super::super::piece_move::{PieceMove, MoveFlag};
 use super::super::Color;
