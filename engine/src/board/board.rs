@@ -72,6 +72,14 @@ impl Board {
         board
     }  
 
+    pub fn try_extract_piece_at(&self, idx: usize) -> Option<Piece> {
+        self.pieces[idx].try_extract_piece()
+    }
+
+    pub fn extract_piece_at(&self, idx: usize) -> Piece {
+        self.pieces[idx].extract_piece()
+    }
+
     pub fn get_size_to_move(&self) -> Color {
         self.side_to_move
     }
