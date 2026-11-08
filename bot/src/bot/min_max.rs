@@ -3,7 +3,7 @@ use std::{debug_assert_eq, matches};
 use engine::{board::{Color, piece_move::PieceMove}, game::game::{Game, GameEnum}};
 use eval::{evaluator::IEvaluator, static_evaluation::MATE_VALUE};
 
-use crate::{allocators::allocator::IAllocator, bot::bot::IBot, move_order::move_order::IMoveOrder, node::{node::INode, node_min_max::NodeMinMax}};
+use crate::{allocators::allocator::IAllocator, bot::{INF, bot::IBot}, move_order::move_order::IMoveOrder, node::{node::INode, node_min_max::NodeMinMax}};
 
 pub struct MinMaxBot<E: IEvaluator, A: IAllocator<NodeMinMax>, O: IMoveOrder>
 {
@@ -41,7 +41,7 @@ impl<E: IEvaluator, A: IAllocator<NodeMinMax>, O: IMoveOrder> MinMaxBot<E, A, O>
         }
 
         let maximizing = game.board.get_size_to_move() == Color::White;
-        let mut best_score = if maximizing { i32::MIN } else { i32::MAX };
+        let mut best_score = if maximizing { -INF } else { INF };
 
         for i in 0..no_moves {
             game.do_move(self.memory.get_node(node).get_move_list().get_ith_move(i));
